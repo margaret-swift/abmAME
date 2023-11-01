@@ -4,7 +4,11 @@
 
 --------------------------------------------------------------------------------
 
-This package is an extension of the *abmAnimalMovement* package, with additional functionality.
+This package is an extension of the *abmAnimalMovement* package, with additional functionality:
+- User can supply fences (or other linear features) along with perceived permeability (crossability) for the species/sex/individual being modeled.
+- Other functionality to follow
+
+--------------------------------------------------------------------------------
 
 The *abmAnimalMovement* simulates animal movement use a discrete time agent-based model, programmed in C++ via the Rcpp package. The simulations include a number of key internal and external movement influences, as well as parameters for navigation and mobility capacity of the animal.
 
