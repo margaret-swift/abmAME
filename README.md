@@ -1,8 +1,10 @@
-# abmAnimalMovementMES
+# abmFences
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6951937.svg)](https://doi.org/10.5281/zenodo.6951937)
 
 --------------------------------------------------------------------------------
+
+This package is an extension of the *abmAnimalMovement* package, with additional functionality.
 
 The *abmAnimalMovement* simulates animal movement use a discrete time agent-based model, programmed in C++ via the Rcpp package. The simulations include a number of key internal and external movement influences, as well as parameters for navigation and mobility capacity of the animal.
 
