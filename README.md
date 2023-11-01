@@ -33,15 +33,12 @@ devtools::install_github("margaret-swift/abmFences")
 
 **Install from CRAN**
 
-<!-- 
 To install [abmAnimalMovement](https://CRAN.R-project.org/package=abmAnimalMovement) from CRAN:
 
 ```
 install.packages("abmAnimalMovement")
 
 ```
--->
-
 
 **Install with GitHub**
 
