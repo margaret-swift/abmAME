@@ -10,7 +10,7 @@ This package is an extension of the *abmAnimalMovement* package, with additional
 
 --------------------------------------------------------------------------------
 
-The *abmAnimalMovement* simulates animal movement use a discrete time agent-based model, programmed in C++ via the Rcpp package. The simulations include a number of key internal and external movement influences, as well as parameters for navigation and mobility capacity of the animal.
+The *abmAnimalMovement* package simulates animal movement use a discrete time agent-based model, programmed in C++ via the Rcpp package. The simulations include a number of key internal and external movement influences, as well as parameters for navigation and mobility capacity of the animal.
 
 A more complete description of the package, alongside a demonstration can be found at DOI: TBC. Or a draft version of that manuscript within the package Github [here](https://github.com/BenMMarshall/abmAnimalMovement/blob/main/notebook/manuscript/Agent-based_model_walkthrough.pdf).
 
@@ -18,12 +18,23 @@ A more complete description of the package, alongside a demonstration can be fou
 
 ## Installation
 
+**Install the fencing extension to the abmAnimalMovement package**
+
+To install *this package*:
+
+```
+install.packages("devtools")
+devtools::install_github("margaret-swift/abmFences")
+```
+
+
+
+## Installation of abmAnimalMovement
+
 **Install from CRAN**
 
-*TBC*
-
 <!-- 
-To install [this package](https://CRAN.R-project.org/package=abmAnimalMovement) from CRAN.
+To install [abmAnimalMovement](https://CRAN.R-project.org/package=abmAnimalMovement) from CRAN:
 
 ```
 install.packages("abmAnimalMovement")
@@ -31,14 +42,17 @@ install.packages("abmAnimalMovement")
 ```
 -->
 
+
 **Install with GitHub**
 
-To install the development versions of the package from GitHub, use the `install_github` function from the `devtools` library.
+To install the development versions of the abmAnimalMovement package from GitHub, use the `install_github` function from the `devtools` library.
 
 ```
 install.packages("devtools")
 devtools::install_github("BenMMarshall/abmAnimalMovement")
 ```
+
+
 
 ## Core simulation function
 
