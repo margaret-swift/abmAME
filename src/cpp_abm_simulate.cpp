@@ -270,7 +270,6 @@
      stepAll[u] = 0;
    }
 
-   std::cout << "STEP OPTIONS L253\n------------------\n" ; // MAGGIE
    for(int i = 1, a = nopt, desi = 0; i < timesteps; i++){
 
      /* working under the assumption that i == minute, but the cycle is defined in
