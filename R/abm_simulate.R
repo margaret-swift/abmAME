@@ -104,7 +104,7 @@
 #'   definition, [cycle_draw()] for further guidance on activity cycle
 #'   definition. [cpp_abm_simulate()] is the C++ function that is called.
 #'
-#' @useDynLib abmAnimalMovementMES
+#' @useDynLib abmFences
 #' @export
 #'
 abm_simulate <- function(start, timesteps,
@@ -512,4 +512,3 @@ run_abm_simulate <- function(startx, starty,
         p_cross
         )
 }
-
