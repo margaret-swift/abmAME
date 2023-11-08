@@ -79,9 +79,9 @@
  //' @param fence_x2 MAGGIE - x points for fence end
  //' @param fence_y1 MAGGIE - y points for fence start
  //' @param fence_y2 MAGGIE - y points for fence end
+ //' @param p_cross - probability of crossing the fence
  //'
  //' [ NOT YET IMPLEMENTED]
- //' @param p_cross - probability of crossing the fence
  //' @param f_condition - fence condition (will affect fence cross prob.)
  //'
  //'---------------------------------------------------
@@ -144,8 +144,7 @@
      std::vector<double> fence_x2,
      std::vector<double> fence_y1,
      std::vector<double> fence_y2,
-
-     double p_cross
+     std::vector<double> p_cross
  ){
 
    // DISTRIBUTION DRAW OBJECTS -------------------------------------------------
@@ -513,12 +512,13 @@
 
        // step 2: check if this line intersects with any fence
        // https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
-       bool intersect = cpp_check_intersection(origin, target, // these are individual points
+       bool isblocked = cpp_check_intersection(origin, target, // these are individual points
                                                fence_x1, fence_x2, // these are vectors
-                                               fence_y1, fence_y2);
+                                               fence_y1, fence_y2,
+                                               p_cross);
 
        // step 3: if there is an intersection, discard with probability 1-P
-       if (intersect) {
+       if (isblocked) {
 
          // If there have been too many trials, keep the most recent draw
          //   and alert the user.
@@ -526,24 +526,11 @@
            std::cout << "WARNING ele cannot find target that doesn't cross " <<
              "the fence! Aborting selection at DRAW " << i << ", option " <<
                j << ".\n";
-         }
-         // trial_count++;
-         // continue;
-
-         // Animal should step through the fence with p_cross. Draw a random number
-         // from the uniform distribution and compare to p_cross.
-         //   TODO: pass p_cross from the user.
-         //   TODO: modify p_cross based on activity type.
-         //   TODO: modify p_cross based on fence condition.
-         //   TODO: modify p_cross based on season (cycle?).
-         // double p_cross = 0.005;
-         double d_cross = Rcpp::runif(1, 0, 1)[0];
-
-         // if d_cross is ABOVE the p_cross threshold, THROW AWAY current draw.
-         //   (large p_cross = less likely to throw away)
-         if (d_cross > p_cross) {
-           trial_count++; // increase number of trials so we don't spin out.
-           continue;
+         // otherwise, the intersection blocks the individual; redraw but
+         // increase the trial counter
+         } else {
+           trial_count++;
+           continue; // THROW AWAY current draw
          }
        }
 

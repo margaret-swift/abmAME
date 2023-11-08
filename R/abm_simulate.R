@@ -134,8 +134,7 @@ abm_simulate <- function(start, timesteps,
                          foragingMatrix,
                          movementMatrix,
 
-                         fence,
-                         p_cross = 0){
+                         fence){
 
 
 # Verify/check inputs -----------------------------------------------------
@@ -298,6 +297,7 @@ abm_simulate <- function(start, timesteps,
   fence_y1 <- fence$y
   fence_x2 <- fence$xend
   fence_y2 <- fence$yend
+  p_cross <- fence$perm
 
 
   # how many additional cycles have been provided, and get that value ready for

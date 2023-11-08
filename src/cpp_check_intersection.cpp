@@ -9,6 +9,7 @@ using namespace std;
 //' @param fence_x2 fence segment x end values
 //' @param fence_y1 fence segment y start values
 //' @param fence_y2 fence segment y end values
+//' @param p_cross  fence segment permeability values
 //' @return A Boolean of whether any fence is crossed
 //' Useful resource: https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
 
@@ -89,11 +90,13 @@ double cpp_check_intersection(std::vector<double> origin,
                               std::vector<double> fence_x1,
                               std::vector<double> fence_x2,
                               std::vector<double> fence_y1,
-                              std::vector<double> fence_y2) {
+                              std::vector<double> fence_y2,
+                              std::vector<double> p_cross
+                        ) {
 
   // declare output and within-function data types
   struct Point fence_p, fence_q, p, q;
-  bool doesIntersect;
+  bool doesIntersect, isBlocked;
   int L;
 
   p = {origin[0], origin[1]};
@@ -105,10 +108,23 @@ double cpp_check_intersection(std::vector<double> origin,
     fence_p = { fence_x1[i], fence_y1[i] };
     fence_q = { fence_x2[i], fence_y2[i] };
     doesIntersect = doIntersect(p, q, fence_p, fence_q);
-    if (doesIntersect) return(true);
+
+    // Animal should step through the fence with p_cross. Draw a random number
+    // from the uniform distribution and compare to p_cross for this fence
+    // segment
+    if (doesIntersect) {
+      // draw number
+      double d_cross = Rcpp::runif(1, 0, 1)[0];
+
+      // if d_cross is ABOVE the p_cross threshold, THROW AWAY current draw.
+      //   (large p_cross = less likely to throw away)
+      if (d_cross > p_cross[i]) {
+        return(true);
+      }
+    }
   }
 
-  // If there are no crossings
+  // If there are no crossings, then individual is not blocked
   return(false);
 }
 // END EXPORTED FUNCTION =======================================================
