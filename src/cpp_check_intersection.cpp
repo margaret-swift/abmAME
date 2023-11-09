@@ -96,7 +96,7 @@ double cpp_check_intersection(std::vector<double> origin,
 
   // declare output and within-function data types
   struct Point fence_p, fence_q, p, q;
-  bool doesIntersect, isBlocked;
+  bool doesIntersect;
   int L;
 
   p = {origin[0], origin[1]};

@@ -1,4 +1,3 @@
-
 #include <Rcpp.h>
 #include <cmath>
 #include "cpp_vonmises.h"
@@ -8,7 +7,7 @@
 #include "cpp_maxmin.h"
 #include "cpp_check_intersection.h"
 
-//' @name cpp_abm_simulate
+ //' @name cpp_abm_simulate
  //' @title cpp_abm_simulate
  //' @description The C++ function that runs the agent based animal movement
  //'   model.

@@ -28,7 +28,8 @@ abm_simulate(
   additional_Cycles,
   shelteringMatrix,
   foragingMatrix,
-  movementMatrix
+  movementMatrix,
+  fence
 )
 }
 \arguments{
@@ -120,6 +121,8 @@ landscape. Higher values are the best foraging areas.}
 
 \item{movementMatrix}{A matrix describing the movement ease of the landscape.
 Higher values are the easiest to move through.}
+
+\item{fence}{fences datasets}
 }
 \value{
 A list with the following components: 1. "locations" The dataframe

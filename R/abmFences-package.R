@@ -9,5 +9,6 @@ NULL
 
 ## usethis namespace: start
 #' @importFrom Rcpp sourceCpp
+#' @import sf
 ## usethis namespace: end
 NULL

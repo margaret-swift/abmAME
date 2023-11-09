@@ -18,7 +18,7 @@
 #' hist(sampleOut)
 #' table(sampleOut) / 10000
 #'
-#' @useDynLib abmAnimalMovementMES
+#' @useDynLib abmFences
 #' @export
 #'
 sample_options <- function(W){
@@ -27,6 +27,6 @@ sample_options <- function(W){
     stop("Weights (W) must be a vector of length > 0")
   }
 
-  .Call("_abmAnimalMovementMES_cpp_sample_options",
+  .Call("_abmFences_cpp_sample_options",
         W)
 }

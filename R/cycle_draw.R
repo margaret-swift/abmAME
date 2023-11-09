@@ -41,7 +41,7 @@
 #' PHI = 24 / 12,
 #' TAU = 12)
 #'
-#' @useDynLib abmAnimalMovementMES
+#' @useDynLib abmFences
 #' @export
 #'
 cycle_draw <- function(TIME, A,  M, PHI, TAU){
@@ -53,6 +53,6 @@ cycle_draw <- function(TIME, A,  M, PHI, TAU){
     stop("All inputs must be numeric")
   }
 
-  .Call("_abmAnimalMovementMES_cpp_cycle_draw",
+  .Call("_abmFences_cpp_cycle_draw",
         TIME, A,  M, PHI, TAU)
 }

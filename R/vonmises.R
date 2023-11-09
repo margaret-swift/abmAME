@@ -21,7 +21,7 @@
 #'   (2001). R package version 0.2-6.
 #'   https://CRAN.R-project.org/package=CircStats
 #'
-#' @useDynLib abmAnimalMovementMES
+#' @useDynLib abmFences
 #' @export
 #'
 #' @examples
@@ -39,6 +39,6 @@ vonmises <- function(N, MU, KAPPA){
     stop("MU and KAPPA inputs must be numeric")
   }
 
-  .Call("_abmAnimalMovementMES_cpp_vonmises",
+  .Call("_abmFences_cpp_vonmises",
         N, MU, KAPPA)
 }

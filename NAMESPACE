@@ -2,7 +2,9 @@
 
 export(abm_simulate)
 export(cycle_draw)
+export(generateBarriers)
 export(sample_options)
 export(vonmises)
+import(sf)
 importFrom(Rcpp,sourceCpp)
-useDynLib(abmAnimalMovementMES)
+useDynLib(abmFences)

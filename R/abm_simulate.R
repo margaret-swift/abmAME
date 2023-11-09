@@ -464,7 +464,7 @@ run_abm_simulate <- function(startx, starty,
                              fence_y2,
                              p_cross
 ){
-  .Call("_abmAnimalMovementMES_cpp_abm_simulate",
+  .Call("_abmFences_cpp_abm_simulate",
         startx, starty,
         timesteps,
         ndes,
