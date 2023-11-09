@@ -10,5 +10,6 @@ NULL
 ## usethis namespace: start
 #' @importFrom Rcpp sourceCpp
 #' @import sf
+#' @import nngeo
 ## usethis namespace: end
 NULL
