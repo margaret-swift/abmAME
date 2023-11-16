@@ -293,11 +293,11 @@ abm_simulate <- function(start, timesteps,
   # Declaring the fence
   # here is where you manipulate the dataset put into fence by casting to MULTIPOINT
 
-  fence_x1 <- fence$x
-  fence_y1 <- fence$y
-  fence_x2 <- fence$xend
-  fence_y2 <- fence$yend
-  p_cross <- fence$perm
+  fence_x1 <- fence[,'x']
+  fence_y1 <- fence[,'y']
+  fence_x2 <- fence[,'xend']
+  fence_y2 <- fence[,'yend']
+  p_cross  <- fence[,'perm']
 
 
   # how many additional cycles have been provided, and get that value ready for
