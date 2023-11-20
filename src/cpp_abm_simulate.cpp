@@ -268,7 +268,20 @@
      stepAll[u] = 0;
    }
 
+
+
+
+   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   // LOOP OVER EACH TIMESTEP
+   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
    for(int i = 1, a = nopt, desi = 0; i < timesteps; i++){
+
+
+
+     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     // CYCLES
+     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
      /* working under the assumption that i == minute, but the cycle is defined in
       hours AKA 12 hour cycle offset to be crepusclar, we need to convert i AKA minute to hours */
@@ -278,6 +291,7 @@
        rest_Cycle_M,
        rest_Cycle_PHI / rest_Cycle_TAU, // make sure PHI is kept ~ to TAU so no drift
        rest_Cycle_TAU);
+
 
      if(addCycles > 0){
 
@@ -297,6 +311,13 @@
 
 
      } // end of if
+
+
+
+
+     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     // CHOOSE BEHAVIORAL STATE AND TRANSITION PROB
+     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
      /* switch to use a given set of transition probabilities that change
       depending on the previous behavioural state*/
@@ -318,6 +339,10 @@
      } // end of switch
 
 
+
+     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     // STEP, ANGLE, AND RASTER MATRIX BASED ON BEHAVIOR
+     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
      /* assigning the step and angle parameters
       depending on the behaviour */
@@ -351,11 +376,11 @@
        break;
      }
 
-     // MAGGIE print out current behavior and draw parameters
-     // std::cout << "  CURRENT BEHAVIOR: " << behave_cur << "\n";
-     // std::cout << "  STEP : GAMMA(" << behave_k_step << "," << behave_s_step << ")\n";
-     // std::cout << "  ANGLE: VM(" << behave_mu_angle << "," << behave_k_angle << ")\n";
-     // std::cout << "\n";
+
+
+     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     // CHOOSING APPROPRIATE DESTINATION
+     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
      // choosing between a number of possible predefined destinations
      // new destination should be chosen if behaviour changes or after a
@@ -417,7 +442,6 @@
        }
      }
 
-
      // store the destination for output
      des_x_Locations[i] = des_x;
      des_y_Locations[i] = des_y;
@@ -433,7 +457,7 @@
      //     ***************************************************************
      //   *******************************************************************
      // ***********************************************************************
-     //                              MOVEMENT LOOP!
+     //                           STEP OPTIONS DRAW !
      // ***********************************************************************
      //   *******************************************************************
      //     ***************************************************************
@@ -443,6 +467,8 @@
      //   of a fence, that option is skipped (with a certain fence-permeability
      //   probability P) and another is chosen.
      // Step 0: Restrict fence list to those within Xkm of origin point, to save time(?)
+     // TODO ^^ BOOKMARK ^^
+
      int j = 0;
      int trial_count = 0;
      int trial_kill = nopt * 10000;
@@ -549,9 +575,6 @@
      } // END MOVEMENT LOOP
 
 
-     // check all x and y options to see if they land within a no-go zone
-     // BOOKMARK TO ADD
-
      move_Options = cpp_get_values(moveMatrix, x_Options, y_Options);
 
      /* here we need to adjust the movement objects so the animal prefers to head
@@ -603,7 +626,6 @@
          } // switch end
        } // if end
      }// for m end
-     // Rcpp::Rcout << "Values modified";
 
      cumulative_dist = 0;
      // current distances from all avoidance points
@@ -619,6 +641,11 @@
        distance_toAvoid[mO] = cumulative_dist;
 
      }
+
+
+     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     // AVOIDANCE POINTS
+     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
      // find MIN
      double distAvoid_min = distance_toAvoid[0];
@@ -650,10 +677,11 @@
        } // switch end
      }
 
-     // for(int i = 0; i < nopt; i++){
-     //   Rcpp::Rcout << "move " << move_Options[i] << " ";
-     // }
-     // Rcpp::Rcout << "\n";
+
+
+     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     // PUT IT ALL TOGETHER
+     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
      chosen = cpp_sample_options(move_Options);
      chosen_Options[i] = chosen;
