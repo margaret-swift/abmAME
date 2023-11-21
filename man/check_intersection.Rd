@@ -2,26 +2,26 @@
 % Please edit documentation in R/RcppExports.R
 \name{check_intersection}
 \alias{check_intersection}
-\title{Check if a line segment (step option) crosses a fence}
+\title{Check if a line segment (step option) crosses a barrier}
 \arguments{
 \item{origin}{start location}
 
 \item{target}{target location}
 
-\item{fence_x1}{fence segment x start values}
+\item{barrier_x1}{barrier segment x start values}
 
-\item{fence_x2}{fence segment x end values}
+\item{barrier_x2}{barrier segment x end values}
 
-\item{fence_y1}{fence segment y start values}
+\item{barrier_y1}{barrier segment y start values}
 
-\item{fence_y2}{fence segment y end values}
+\item{barrier_y2}{barrier segment y end values}
 
-\item{p_cross}{fence segment permeability values}
+\item{p_cross}{barrier segment permeability values}
 }
 \value{
-A Boolean of whether any fence is crossed
+A Boolean of whether any barrier is crossed
 Useful resource: https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
 }
 \description{
-Check if a line segment (step option) crosses a fence
+Check if a line segment (step option) crosses a barrier
 }

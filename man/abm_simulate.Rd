@@ -29,7 +29,7 @@ abm_simulate(
   shelteringMatrix,
   foragingMatrix,
   movementMatrix,
-  fence
+  barrier
 )
 }
 \arguments{
@@ -113,16 +113,16 @@ define the resting/active cycle. Ideal for defining circadian rhythm.}
 for defining patterns that operate alongside circadian rhythm, e.g.,
 seasonal shifts.}
 
-\item{shelteringMatrix}{A matrix describing the sheltering quality of the
+\item{shelteringMatrix}{A RASTER describing the sheltering quality of the
 landscape. Higher values are the best shelter quality.}
 
-\item{foragingMatrix}{A matrix describing the foraging quality of the
+\item{foragingMatrix}{A RASTER describing the foraging quality of the
 landscape. Higher values are the best foraging areas.}
 
-\item{movementMatrix}{A matrix describing the movement ease of the landscape.
+\item{movementMatrix}{A RASTER describing the movement ease of the landscape.
 Higher values are the easiest to move through.}
 
-\item{fence}{fences datasets}
+\item{barrier}{barriers datasets}
 }
 \value{
 A list with the following components: 1. "locations" The dataframe

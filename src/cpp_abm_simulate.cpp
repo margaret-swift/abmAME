@@ -3,7 +3,7 @@
 #include "cpp_vonmises.h"
 #include "cpp_sample_options.h"
 #include "cpp_cycle_draw.h"
-#include "cpp_get_values.h"
+#include "cpp_get_values_rast.h"
 #include "cpp_maxmin.h"
 #include "cpp_check_intersection.h"
 
@@ -68,21 +68,18 @@
  //'   of the additional active cycles, should be a vector of doubles.
  //' @param add_Cycle_TAU Cycle frequency (\eqn{\tau}; i.e., period) of the
  //'   additional active cycles, should be a vector of doubles.
- //' @param shelterMatrix The matrix describing shelter site quality.
- //' @param forageMatrix The matrix describing foraging site quality.
- //' @param moveMatrix The matrix describing movement ease.
+ //'
+ //' @param shelterMatrix The RASTER describing shelter site quality.
+ //' @param forageMatrix The RASTER describing foraging site quality.
+ //' @param moveMatrix The RASTER describing movement ease.
  //'
  //'---------------------------------------------------
  //' MAGGIE'S ADDITIONAL PARAMETERS FOR FENCE PROJECT
- //' @param fence_x1 MAGGIE - x points for fence start
- //' @param fence_x2 MAGGIE - x points for fence end
- //' @param fence_y1 MAGGIE - y points for fence start
- //' @param fence_y2 MAGGIE - y points for fence end
- //' @param p_cross - probability of crossing the fence
- //'
- //' [ NOT YET IMPLEMENTED]
- //' @param f_condition - fence condition (will affect fence cross prob.)
- //'
+ //' @param barrier_x1 MAGGIE - x points for barrier start
+ //' @param barrier_x2 MAGGIE - x points for barrier end
+ //' @param barrier_y1 MAGGIE - y points for barrier start
+ //' @param barrier_y2 MAGGIE - y points for barrier end
+ //' @param p_cross - probability of crossing the barrier
  //'---------------------------------------------------
  //'
  //' @return A list of simulated animal details to be passed and handled by R
@@ -139,10 +136,10 @@
      Rcpp::NumericMatrix forageMatrix,
      Rcpp::NumericMatrix moveMatrix,
 
-     std::vector<double> fence_x1,
-     std::vector<double> fence_x2,
-     std::vector<double> fence_y1,
-     std::vector<double> fence_y2,
+     std::vector<double> barrier_x1,
+     std::vector<double> barrier_x2,
+     std::vector<double> barrier_y1,
+     std::vector<double> barrier_y2,
      std::vector<double> p_cross
  ){
 
@@ -211,8 +208,13 @@
 
    // DESINATION OBJECTS -------------------------------------------------------
    int chosenDes = 0;
+
+
    // desMatrix will update depending on behaviour
+   // MAGGIE TODO: This needs to be a RASTER
    Rcpp::NumericMatrix desMatrix;
+
+
    // define the memory for the shelter site selection
    // requires predefined vector of shelter coords
    int shel_ndes = shelter_locs_x.size();
@@ -352,27 +354,24 @@
        behave_s_step = s_step[0];
        behave_mu_angle = mu_angle[0];
        behave_k_angle = k_angle[0];
-       // change the matrix used for choosing destination
        desMatrix = shelterMatrix;
-       behave_cur = "sheltering"; //MAGGIE
+       behave_cur = "sheltering";
        break;
      case 1:
        behave_k_step = k_step[1];
        behave_s_step = s_step[1];
        behave_mu_angle = mu_angle[1];
        behave_k_angle = k_angle[1];
-       // replaced with the moveMatrix but it doesn't actually impact anything
-       desMatrix = moveMatrix;
-       behave_cur = "moving";
+       desMatrix = forageMatrix;
+       behave_cur = "foraging";
        break;
-     case 2:
+     case 2: // MAGGIE note: swapped 1 and 2
        behave_k_step = k_step[2];
        behave_s_step = s_step[2];
        behave_mu_angle = mu_angle[2];
        behave_k_angle = k_angle[2];
-       // change the matrix used for choosing destination
-       desMatrix = forageMatrix;
-       behave_cur = "foraging";
+       desMatrix = moveMatrix;
+       behave_cur = "moving";
        break;
      }
 
@@ -393,7 +392,8 @@
        switch(behave_Locations[i]){
        case 0:
 
-         des_Options = cpp_get_values(desMatrix, shelter_locs_x, shelter_locs_y);
+         // MAGGIE: RASTER CHECK #1
+         des_Options = cpp_get_values_rast(desMatrix, shelter_locs_x, shelter_locs_y);
          chosenDes = cpp_sample_options(des_Options);
 
          des_x = shelter_locs_x[chosenDes];
@@ -408,13 +408,8 @@
          }
 
          break;
+       // MAGGIE note: swapped cases 1 and 2 for forage/explore
        case 1:
-         // we can update the destination here, but explore doesn't have a
-         // destination weighting so this has no effect
-         des_x = shelter_locs_x[0];
-         des_y = shelter_locs_y[0];
-         break;
-       case 2:
 
          for(int dopt = 0; dopt < ndes; dopt++, desi++){
 
@@ -432,12 +427,20 @@
            step_DesOptionsAll[desi] = i;
          }
 
-         des_forageOptions = cpp_get_values(desMatrix, x_forageOptions, y_forageOptions);
+         // MAGGIE: RASTER CHECK #2
+         des_forageOptions = cpp_get_values_rast(desMatrix, x_forageOptions, y_forageOptions);
 
          chosenDes = cpp_sample_options(des_forageOptions);
          des_x = x_forageOptions[chosenDes];
          des_y = y_forageOptions[chosenDes];
 
+         break;
+
+       case 2:
+         // we can update the destination here, but explore doesn't have a
+         // destination weighting so this has no effect
+         des_x = shelter_locs_x[0];
+         des_y = shelter_locs_y[0];
          break;
        }
      }
@@ -464,9 +467,9 @@
 
      // MAGGIE BOOKMARK : Changed original FOR loop to a WHILE loop so that if
      //   a location is chosen that puts the animal within or on the other side
-     //   of a fence, that option is skipped (with a certain fence-permeability
+     //   of a barrier, that option is skipped (with a certain barrier-permeability
      //   probability P) and another is chosen.
-     // Step 0: Restrict fence list to those within Xkm of origin point, to save time(?)
+     // Step 0: Restrict barrier list to those within Xkm of origin point, to save time(?)
      // TODO ^^ BOOKMARK ^^
 
      int j = 0;
@@ -495,7 +498,7 @@
        }
 
        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-       // RESCALE STEP BASED ON DISTANCE FROM SHELTER
+       // DRAW STEP LENGTH AND TURNING ANGLE
        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
        // an if to make sure the animal doesn't move too far from a shelter site
@@ -508,10 +511,6 @@
          step = Rcpp::rgamma(1, behave_k_step, behave_s_step)[0];
          step = step / rescale;
        }
-
-       // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-       // DRAW STEP LENGTH AND TURNING ANGLE
-       // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
        // draw from vonmises for angle
        vmdraw = cpp_vonmises(1, behave_mu_angle, behave_k_angle)[0];
@@ -528,18 +527,18 @@
 
 
        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-       // CHECK POTENTIAL FENCE CROSSING BEHAVIOR
+       // CHECK POTENTIAL BARRIER CROSSING BEHAVIOR
        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
        // step 1: create a line between current point and new point
        std::vector<double> origin = {x_Options[0], y_Options[0]};
        std::vector<double> target = {x_Options[j], y_Options[j]};
 
-       // step 2: check if this line intersects with any fence
+       // step 2: check if this line intersects with any barrier
        // https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
        bool isblocked = cpp_check_intersection(origin, target, // these are individual points
-                                               fence_x1, fence_x2, // these are vectors
-                                               fence_y1, fence_y2,
+                                               barrier_x1, barrier_x2, // these are vectors
+                                               barrier_y1, barrier_y2,
                                                p_cross);
 
        // step 3: if there is an intersection, discard with probability 1-P
@@ -549,7 +548,7 @@
          //   and alert the user.
          if (trial_count >= trial_kill) {
            std::cout << "WARNING ele cannot find target that doesn't cross " <<
-             "the fence! Aborting selection at DRAW " << i << ", option " <<
+             "the barrier! Aborting selection at DRAW " << i << ", option " <<
                j << ".\n";
          // otherwise, the intersection blocks the individual; redraw but
          // increase the trial counter
@@ -575,7 +574,13 @@
      } // END MOVEMENT LOOP
 
 
-     move_Options = cpp_get_values(moveMatrix, x_Options, y_Options);
+
+     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     // WEIGHTING OPTIONS BY DISTANCE FROM DESTINATION
+     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+     // MAGGIE: RASTER CHECK #3
+     move_Options = cpp_get_values_rast(moveMatrix, x_Options, y_Options);
 
      /* here we need to adjust the movement objects so the animal prefers to head
       * towards the centre point.
@@ -627,8 +632,14 @@
        } // if end
      }// for m end
 
-     cumulative_dist = 0;
+
+
+     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     // DEALING WITH AVOIDANCE POINTS
+     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
      // current distances from all avoidance points
+     cumulative_dist = 0;
      for(int mO = 0; mO < nopt; mO++){
        for(int avp = 0; avp < navp; avp++){
 
@@ -639,13 +650,7 @@
 
        }
        distance_toAvoid[mO] = cumulative_dist;
-
      }
-
-
-     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-     // AVOIDANCE POINTS
-     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
      // find MIN
      double distAvoid_min = distance_toAvoid[0];
@@ -680,12 +685,11 @@
 
 
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-     // PUT IT ALL TOGETHER
+     // NOW THE AGENT MAKES ITS CHOICE
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
      chosen = cpp_sample_options(move_Options);
      chosen_Options[i] = chosen;
-     // Rcpp::Rcout << "Chosen selected";
 
      // make sure to update the direction of travel each move
      last_angle = taOptions[chosen];
@@ -695,8 +699,8 @@
        last_angle = last_angle + 180;
      }
 
-     x_Locations[i] = x_Options[chosen];
-     y_Locations[i] = y_Options[chosen];
+     x_Locations[i]  = x_Options[chosen];
+     y_Locations[i]  = y_Options[chosen];
      sl_Locations[i] = slOptions[chosen];
      ta_Locations[i] = last_angle;
      step_Locations[i] = i;

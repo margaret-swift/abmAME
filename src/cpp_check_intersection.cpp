@@ -1,16 +1,16 @@
 #include <Rcpp.h>
 using namespace std;
 
-//' Check if a line segment (step option) crosses a fence
+//' Check if a line segment (step option) crosses a barrier
 //' @name check_intersection
 //' @param origin start location
 //' @param target target location
-//' @param fence_x1 fence segment x start values
-//' @param fence_x2 fence segment x end values
-//' @param fence_y1 fence segment y start values
-//' @param fence_y2 fence segment y end values
-//' @param p_cross  fence segment permeability values
-//' @return A Boolean of whether any fence is crossed
+//' @param barrier_x1 barrier segment x start values
+//' @param barrier_x2 barrier segment x end values
+//' @param barrier_y1 barrier segment y start values
+//' @param barrier_y2 barrier segment y end values
+//' @param p_cross  barrier segment permeability values
+//' @return A Boolean of whether any barrier is crossed
 //' Useful resource: https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
 
 
@@ -87,30 +87,30 @@ bool doIntersect(Point p1, Point q1, Point p2, Point q2) {
 // [[Rcpp::export]]
 double cpp_check_intersection(std::vector<double> origin,
                               std::vector<double> target,
-                              std::vector<double> fence_x1,
-                              std::vector<double> fence_x2,
-                              std::vector<double> fence_y1,
-                              std::vector<double> fence_y2,
+                              std::vector<double> barrier_x1,
+                              std::vector<double> barrier_x2,
+                              std::vector<double> barrier_y1,
+                              std::vector<double> barrier_y2,
                               std::vector<double> p_cross
                         ) {
 
   // declare output and within-function data types
-  struct Point fence_p, fence_q, p, q;
+  struct Point barrier_p, barrier_q, p, q;
   bool doesIntersect;
   int L;
 
   p = {origin[0], origin[1]};
   q = {target[0], target[1]};
 
-  // Loop over fence segments and see if there's a crossing
-  L = fence_x1.size();
+  // Loop over barrier segments and see if there's a crossing
+  L = barrier_x1.size();
   for (int i = 0; i < L; i++) {
-    fence_p = { fence_x1[i], fence_y1[i] };
-    fence_q = { fence_x2[i], fence_y2[i] };
-    doesIntersect = doIntersect(p, q, fence_p, fence_q);
+    barrier_p = { barrier_x1[i], barrier_y1[i] };
+    barrier_q = { barrier_x2[i], barrier_y2[i] };
+    doesIntersect = doIntersect(p, q, barrier_p, barrier_q);
 
-    // Animal should step through the fence with p_cross. Draw a random number
-    // from the uniform distribution and compare to p_cross for this fence
+    // Animal should step through the barrier with p_cross. Draw a random number
+    // from the uniform distribution and compare to p_cross for this barrier
     // segment
     if (doesIntersect) {
       // draw number
