@@ -23,6 +23,6 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Depends: R (>= 3.5.0)
 LinkingTo: Rcpp (>= 1.0.8.3), BH (>= 1.78.0.0)
-Imports: Rcpp, sf
+Imports: Rcpp, sf, terra, tictoc
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr

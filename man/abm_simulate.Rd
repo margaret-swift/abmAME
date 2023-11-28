@@ -10,8 +10,8 @@ abm_simulate(
   des_options,
   options,
   shelterLocations,
-  shelterSize,
-  avoidPoints,
+  shelterSize = NULL,
+  avoidPoints = NULL,
   destinationRange,
   destinationDirection,
   destinationTransformation,
@@ -29,7 +29,8 @@ abm_simulate(
   shelteringMatrix,
   foragingMatrix,
   movementMatrix,
-  barrier
+  barrier,
+  checktime = FALSE
 )
 }
 \arguments{
@@ -123,6 +124,8 @@ landscape. Higher values are the best foraging areas.}
 Higher values are the easiest to move through.}
 
 \item{barrier}{barriers datasets}
+
+\item{checktime}{boolean if you want to more accurately estimate time req'd}
 }
 \value{
 A list with the following components: 1. "locations" The dataframe

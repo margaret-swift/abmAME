@@ -28,7 +28,7 @@ generateBarriers <- function(barriers, p_list) {
   } else {
     message("Changing permeability based on barrier.")
     for (i in 1:NB) {
-      b <- .segmentBarrier(barriers[i,], p_list[i], i)
+      b <- .segmentBarrier(barriers[[i]], p_list[i], i)
       if (i == 1) barrier.df <- b
       else barrier.df <- rbind(barrier.df, b)
     }
@@ -37,14 +37,14 @@ generateBarriers <- function(barriers, p_list) {
 }
 
 # helper function not to export
-.segmentBarrier <- function(fence, p_cross, id=0) {
-  data <- fences %>% st_segments() %>% st_coordinates()
+.segmentBarrier <- function(b, p_cross, id=0) {
+  data <- b %>% st_segments() %>% st_coordinates()
   NR <- nrow(data)
-  my.fence <- matrix(data=0, nrow=NR/2, ncol=6)
-  my.fence[,1:2] <- data[seq(1, NR, by=2), 1:2]
-  my.fence[,3:4] <- data[seq(2, NR, by=2), 1:2]
-  my.fence[,5] <- p_cross
-  my.fence[,6] <- id
-  colnames(my.fence) = c('x', 'y', 'xend', 'yend', 'perm', 'id')
-  return(my.fence)
+  b.mat <- matrix(data=0, nrow=NR/2, ncol=6)
+  b.mat[,1:2] <- data[seq(1, NR, by=2), 1:2]
+  b.mat[,3:4] <- data[seq(2, NR, by=2), 1:2]
+  b.mat[,5] <- p_cross
+  b.mat[,6] <- id
+  colnames(b.mat) = c('x', 'y', 'xend', 'yend', 'perm', 'id')
+  return(b.mat)
 }

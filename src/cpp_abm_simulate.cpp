@@ -75,6 +75,8 @@
  //'
  //'---------------------------------------------------
  //' MAGGIE'S ADDITIONAL PARAMETERS FOR FENCE PROJECT
+ //' @param envExt MAGGIE - extent and resolution for environmental matrices;
+ //'                      in order: xmin, xmax, ymin, ymax, xres, yres
  //' @param barrier_x1 MAGGIE - x points for barrier start
  //' @param barrier_x2 MAGGIE - x points for barrier end
  //' @param barrier_y1 MAGGIE - y points for barrier start
@@ -135,6 +137,7 @@
      Rcpp::NumericMatrix shelterMatrix,
      Rcpp::NumericMatrix forageMatrix,
      Rcpp::NumericMatrix moveMatrix,
+     std::vector<double> envExt,
 
      std::vector<double> barrier_x1,
      std::vector<double> barrier_x2,
@@ -271,15 +274,24 @@
    }
 
 
-
-
    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    // LOOP OVER EACH TIMESTEP
    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+   int nstep = 50;
+   int slice = std::floor(timesteps / nstep);
+   bool dolog = timesteps > 1000;
+
+   if (dolog) {
+     std::cout << "[" << std::string(nstep, '.') << "]" << std::endl;
+     std::cout << " ";
+   }
+
+
    for(int i = 1, a = nopt, desi = 0; i < timesteps; i++){
 
-
+     // progress marker
+     if ( (dolog) && (i > 0) && (i % slice == 0)) { std::cout << '|'; }
 
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // CYCLES
@@ -393,7 +405,8 @@
        case 0:
 
          // MAGGIE: RASTER CHECK #1
-         des_Options = cpp_get_values_rast(desMatrix, shelter_locs_x, shelter_locs_y);
+         // std::cout << "resting raster check" << std::endl;
+         des_Options = cpp_get_values_rast(desMatrix, envExt, shelter_locs_x, shelter_locs_y);
          chosenDes = cpp_sample_options(des_Options);
 
          des_x = shelter_locs_x[chosenDes];
@@ -428,7 +441,8 @@
          }
 
          // MAGGIE: RASTER CHECK #2
-         des_forageOptions = cpp_get_values_rast(desMatrix, x_forageOptions, y_forageOptions);
+         // std::cout << "forage raster check" << std::endl;
+         des_forageOptions = cpp_get_values_rast(desMatrix, envExt, x_forageOptions, y_forageOptions);
 
          chosenDes = cpp_sample_options(des_forageOptions);
          des_x = x_forageOptions[chosenDes];
@@ -574,13 +588,12 @@
      } // END MOVEMENT LOOP
 
 
-
-     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // WEIGHTING OPTIONS BY DISTANCE FROM DESTINATION
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
      // MAGGIE: RASTER CHECK #3
-     move_Options = cpp_get_values_rast(moveMatrix, x_Options, y_Options);
+     // std::cout << "move raster check" << std::endl;
+     move_Options = cpp_get_values_rast(moveMatrix, envExt, x_Options, y_Options);
 
      /* here we need to adjust the movement objects so the animal prefers to head
       * towards the centre point.
@@ -706,6 +719,7 @@
      step_Locations[i] = i;
 
    }
+   if (dolog) {std::cout << "| 100% ! \\o/" << std::endl;}
 
    Rcpp::List INPUT_basic = Rcpp::List::create(
      Rcpp::Named("in_startx") = startx,

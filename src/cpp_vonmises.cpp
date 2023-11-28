@@ -31,7 +31,7 @@ std::vector<double> cpp_vonmises(int N, double MU, double KAPPA) {
   b = (a - std::pow((2.0 * a), 0.5))/(2.0 * k);
   r = (1.0 + std::pow(b,2) )/(2.0 * b);
 
-  // added in varaibles to dodge sign() and attempt to make ambiguity in fmod()
+  // added in variables to dodge sign() and attempt to make ambiguity in fmod()
   double sign, val;
 
   for(int obs = 0; obs < n; obs++){

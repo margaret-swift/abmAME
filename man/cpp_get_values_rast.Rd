@@ -3,16 +3,20 @@
 \name{cpp_get_values_rast}
 \alias{cpp_get_values_rast}
 \title{cpp_get_values_rast}
+\usage{
+cpp_get_values_rast(RASTER, ENVEXT, XLOCS, YLOCS)
+}
 \arguments{
 \item{RASTER}{A RASTER that the value will be extracted from.}
+
+\item{ENVEXT}{A vector of extent and resolution for environmental matrices: in order: xmin, xmax, ymin, ymax, xres, yres}
 
 \item{XLOCS}{A vector of x locations.}
 
 \item{YLOCS}{A vector of y locations.}
 }
 \value{
-A vector of values equal to the length of XLOCS extracted from
-MATRIX.
+A vector of values equal to the length of XLOCS extracted from RASTER.
 }
 \description{
 cpp_get_values_rast
