@@ -12,39 +12,69 @@
 #' @export
 #'
 
-generateBarriers <- function(barriers, p_list) {
+generateBarriers <- function(barriers, rast, p_list) {
   # inputs are a shapefile of barrier data and a list of accompanying
   # permeabilities for each one. If all are the same for one barrier type,
   # then we only have to run it once for the whole dataset
   LP <- length(p_list)
   if (class(barriers)[1] == 'list') NB <- length(barriers)
   else NB <- nrow(barriers)
-  if (LP == 1) {
-    message("NOTE: setting all barrier permeabilities to ", p_list, '.')
-    barrier.df <- .segmentBarrier(barriers, p_list)
-  } else if (LP != NB) {
+  if (LP != NB) {
     message("WARNING! length of permeability vector must be 1 or #barriers")
     return()
   } else {
     message("Changing permeability based on barrier.")
+    if (LP == 1) {
+      message("NOTE: setting all barrier permeabilities to ", p_list, '.')
+      p <- p_list
+    }
     for (i in 1:NB) {
-      b <- .segmentBarrier(barriers[[i]], p_list[i], i)
-      if (i == 1) barrier.df <- b
-      else barrier.df <- rbind(barrier.df, b)
+      if (LP > 1) p = p_list[i]
+      b <- barriers[[i]]
+      segs <- .segmentBarriers(b, i)
+      mat <- .createMatrix(data, p)
+      lookup <- .createLookup(segs, rast)
+
+      if (i == 1) {
+        barrier.df <- mat
+        lookup.df <- lookup
+      } else {
+        barrier.df <- rbind(barrier.df, mat)
+        lookup.df <- rbind(lookup.df, lookup)
+      }
     }
   }
-  return(barrier.df)
+  return(list(barrier.df, lookup.df))
 }
 
-# helper function not to export
-.segmentBarrier <- function(b, p_cross, id=0) {
-  data <- b %>% st_segments() %>% st_coordinates()
-  NR <- nrow(data)
+# helper functions not to export
+.segmentBarriers <- function(b, id=0) {
+  data <- b %>% st_segments()
+  NR = nrow(data)
+  dig <- floor(log10(NR)) + 1
+  data$INX <- id + (10 ^ -dig) * (1:NR)
+  return(data)
+}
+
+.createMatrix <- function(data, p) {
+  coords <- data %>% st_coordinates()
+  NR <- nrow(coords)
+  # fill in barrier matrix
   b.mat <- matrix(data=0, nrow=NR/2, ncol=6)
-  b.mat[,1:2] <- data[seq(1, NR, by=2), 1:2]
-  b.mat[,3:4] <- data[seq(2, NR, by=2), 1:2]
-  b.mat[,5] <- p_cross
-  b.mat[,6] <- id
+  b.mat[,1:2] <- coords[seq(1, NR, by=2), 1:2]
+  b.mat[,3:4] <- coords[seq(2, NR, by=2), 1:2]
+  b.mat[,5] <- p
+  b.mat[,6] <- data$INX
   colnames(b.mat) = c('x', 'y', 'xend', 'yend', 'perm', 'id')
-  return(b.mat)
+  b.mat
+}
+
+.createLookup <- function(data, rast) {
+  tab <- terra::extract(rast, data)
+  tab$INX <- data$INX[tab$ID]
+  inx.na <- is.na(tab[,2])
+  tab <- tab[!inx.na,]
+  tab <- tab[order(tab[,2]),]
+  tab <- as.matrix(tab)
+  return(tab)
 }

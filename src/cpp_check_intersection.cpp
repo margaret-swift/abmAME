@@ -1,4 +1,5 @@
 #include <Rcpp.h>
+#include "windows.h"
 using namespace std;
 
 //' Check if a line segment (step option) crosses a barrier
@@ -107,13 +108,24 @@ double cpp_check_intersection(std::vector<double> origin,
   for (int i = 0; i < L; i++) {
     barrier_p = { barrier_x1[i], barrier_y1[i] };
     barrier_q = { barrier_x2[i], barrier_y2[i] };
-    doesIntersect = doIntersect(p, q, barrier_p, barrier_q);
+
+    // progress marker
+    Sleep(100);
+    if ( (i > 0) && (i % 10000 == 0)) {
+      // std::cout << "  checking fence " << i << std::endl;
+      doesIntersect = doIntersect(p, q, barrier_p, barrier_q);
+      // std::cout << "  " << doesIntersect << std::endl;
+    } else {
+      doesIntersect = doIntersect(p, q, barrier_p, barrier_q);
+    }
 
     // Animal should step through the barrier with p_cross. Draw a random number
     // from the uniform distribution and compare to p_cross for this barrier
     // segment
     if (doesIntersect) {
       // draw number
+      std::cout << "   ELE does intersect!!!" << std::endl;
+      // Sleep(5);
       double d_cross = Rcpp::runif(1, 0, 1)[0];
 
       // if d_cross is ABOVE the p_cross threshold, THROW AWAY current draw.

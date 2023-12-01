@@ -69,7 +69,8 @@
 #'   landscape. Higher values are the best foraging areas.
 #' @param movementMatrix A RASTER describing the movement ease of the landscape.
 #'   Higher values are the easiest to move through.
-#' @param barrier barriers datasets
+#' @param barrier_sf barrier simple features list
+#' @param perms list of permeabilities
 #' @param checktime boolean if you want to more accurately estimate time req'd
 #'
 #' @return A list with the following components: 1. "locations" The dataframe
@@ -304,15 +305,8 @@ abm_simulate <- function(start, timesteps,
   avoidPoints_xIN <- avoidPoints[,1]
   avoidPoints_yIN <- avoidPoints[,2]
 
-  # Declaring the barrier
-  # here is where you manipulate the dataset put into barrier by casting to MULTIPOINT
 
-  barrier_x1 <- barrier[,'x']
-  barrier_y1 <- barrier[,'y']
-  barrier_x2 <- barrier[,'xend']
-  barrier_y2 <- barrier[,'yend']
-  p_cross  <- barrier[,'perm']
-
+  ### RASTERS ###z
   # transforming raster to matrix with size and extent info
   createMat <- function(rast) {
     mat <- as.matrix(rast, wide=TRUE)
@@ -326,10 +320,13 @@ abm_simulate <- function(start, timesteps,
     print(paste0('min max within range: ', flag))
     flag
   }
+
+  print('creating raster matrices for landscape variables...')
   moveMat  <- createMat(movementMatrix)
   sheltMat <- createMat(shelteringMatrix)
   forageMat<- createMat(foragingMatrix)
 
+  print('checking if raster matrices have correct numeric values...')
   if(
      !checkMat(sheltMat) |
      !checkMat(moveMat) |
@@ -343,6 +340,29 @@ abm_simulate <- function(start, timesteps,
   ext <- unlist(as.list(terra::ext(shelteringMatrix)), use.names=FALSE)
   res <- terra::res(ELE_shelter)
   envExt <-c(ext, res)
+
+
+
+  ### BARRIERS ###
+
+  # create a raster matrix for cell lookup -- which cells are crossed by which
+  rast = sheltMat
+  values(rast)[,] <- 1:ncell(rast)
+
+  # Generate the barrier dataset by segmenting sf lines
+  print('generating barriers...')
+  barrier_data = generateBarriers(barrier_sf, rast, perms)
+  barrier <- barrier_data[[1]]
+  lookup <- barrier_data[[2]]
+
+  # get pieces of barrier to pass into C++ function
+  barrier_x1 <- barrier[,'x']
+  barrier_y1 <- barrier[,'y']
+  barrier_x2 <- barrier[,'xend']
+  barrier_y2 <- barrier[,'yend']
+  p_cross    <- barrier[,'perm']
+
+  ### CYCLE ###
   # how many additional cycles have been provided, and get that value ready for
   # C++
   if(is.null(additional_Cycles)){
@@ -351,74 +371,75 @@ abm_simulate <- function(start, timesteps,
     nAdditionalCycles <- nrow(additional_Cycles)
   }
 
-  if (checktime) {
-    message('checking time to run full simulation...')
-    t0 <- proc.time()[['elapsed']]
-    nstep = 100
-    testres <- run_abm_simulate(
-      startx = startxIN,
-      starty = startyIN,
-      timesteps = nstep,
-      ndes = des_options,
-      nopt = options,
-
-      shelter_locs_x = shelter_locs_xIN,
-      shelter_locs_y = shelter_locs_yIN,
-      sSiteSize = shelterSize,
-      avoidPoints_x = avoidPoints_xIN,
-      avoidPoints_y = avoidPoints_yIN,
-
-      k_desRange = destinationRange[1],
-      s_desRange = destinationRange[2],
-      mu_desDir = destinationDirection[1],
-      k_desDir = destinationDirection[2],
-      destinationTrans = destinationTransformation,
-      destinationMod = destinationModifier,
-      avoidTrans = avoidTransformation,
-      avoidMod = avoidModifier,
-
-      k_step = k_step,
-      s_step = s_step,
-      mu_angle = mu_angle,
-      k_angle = k_angle,
-      rescale = rescale_step2cell,
-      b0_Options = behave_Tmat[1,],
-      b1_Options = behave_Tmat[2,],
-      b2_Options = behave_Tmat[3,],
-
-      rest_Cycle_A = rest_Cycle[1],
-      rest_Cycle_M = rest_Cycle[2],
-      rest_Cycle_PHI = rest_Cycle[3],
-      rest_Cycle_TAU = rest_Cycle[4],
-      addCycles = nAdditionalCycles,
-      add_Cycle_A = additional_Cycles[,1],
-      add_Cycle_M = additional_Cycles[,2],
-      add_Cycle_PHI = additional_Cycles[,3],
-      add_Cycle_TAU = additional_Cycles[,4],
-
-      shelterMatrix = sheltMat,
-      forageMatrix = forageMat,
-      moveMatrix = moveMat,
-      envExt = envExt,
-
-      barrier_x1,
-      barrier_x2,
-      barrier_y1,
-      barrier_y2,
-      p_cross
-    )
-    t1 <- proc.time()[['elapsed']]
-    persec <- (t1-t0) / nstep
-  } else { persec = 0.0034 }
-  est.time <- timesteps * persec
-
-  message('running simulation...')
-  message('start time: ', Sys.time())
-  message('estimated time to run ', timesteps, ' iterations: ', est.time, " seconds")
-  message('etimated end time: ', Sys.time()+est.time)
+  # if (checktime) {
+  #   print('checking time to run full simulation...')
+  #   t0 <- proc.time()[['elapsed']]
+  #   nstep = 100
+  #   testres <- run_abm_simulate(
+  #     startx = startxIN,
+  #     starty = startyIN,
+  #     timesteps = nstep,
+  #     ndes = des_options,
+  #     nopt = options,
+  #
+  #     shelter_locs_x = shelter_locs_xIN,
+  #     shelter_locs_y = shelter_locs_yIN,
+  #     sSiteSize = shelterSize,
+  #     avoidPoints_x = avoidPoints_xIN,
+  #     avoidPoints_y = avoidPoints_yIN,
+  #
+  #     k_desRange = destinationRange[1],
+  #     s_desRange = destinationRange[2],
+  #     mu_desDir = destinationDirection[1],
+  #     k_desDir = destinationDirection[2],
+  #     destinationTrans = destinationTransformation,
+  #     destinationMod = destinationModifier,
+  #     avoidTrans = avoidTransformation,
+  #     avoidMod = avoidModifier,
+  #
+  #     k_step = k_step,
+  #     s_step = s_step,
+  #     mu_angle = mu_angle,
+  #     k_angle = k_angle,
+  #     rescale = rescale_step2cell,
+  #     b0_Options = behave_Tmat[1,],
+  #     b1_Options = behave_Tmat[2,],
+  #     b2_Options = behave_Tmat[3,],
+  #
+  #     rest_Cycle_A = rest_Cycle[1],
+  #     rest_Cycle_M = rest_Cycle[2],
+  #     rest_Cycle_PHI = rest_Cycle[3],
+  #     rest_Cycle_TAU = rest_Cycle[4],
+  #     addCycles = nAdditionalCycles,
+  #     add_Cycle_A = additional_Cycles[,1],
+  #     add_Cycle_M = additional_Cycles[,2],
+  #     add_Cycle_PHI = additional_Cycles[,3],
+  #     add_Cycle_TAU = additional_Cycles[,4],
+  #
+  #     shelterMatrix = sheltMat,
+  #     forageMatrix = forageMat,
+  #     moveMatrix = moveMat,
+  #     envExt = envExt,
+  #
+  #     barrier_x1,
+  #     barrier_x2,
+  #     barrier_y1,
+  #     barrier_y2,
+  #     p_cross
+  #   )
+  #   t1 <- proc.time()[['elapsed']]
+  #   persec <- (t1-t0) / nstep
+  # } else { persec = 0.0034 }
+  # est.time <- timesteps * persec
+  #
+  # print('running simulation...')
+  # print(paste0('start time: ', Sys.time()))
+  # print(paste0('estimated time to run ', timesteps, ' iterations: ', est.time, " seconds"))
+  # print(paste0('estimated end time: ', Sys.time()+est.time))
 
   # input all into the Cpp function
-  tictoc::tic()
+  # tictoc::tic()
+  Sys.sleep(2)
   res <- run_abm_simulate(
     startx = startxIN,
     starty = startyIN,
@@ -469,9 +490,10 @@ abm_simulate <- function(start, timesteps,
     barrier_x2,
     barrier_y1,
     barrier_y2,
-    p_cross
+    p_cross,
+    lookup
   )
-  tictoc::toc()
+  # tictoc::toc()
   # tidy up all objects parse via the
   # list into dataframes with properly labelled columns
 
@@ -480,7 +502,6 @@ abm_simulate <- function(start, timesteps,
   names(OUTPUTS)[2] <- "options"
   names(OUTPUTS)[3] <- "others"
   names(OUTPUTS)[4] <- "inputs"
-
   locations <- data.frame(
     timestep = res$loc_step,
     x = res$loc_x,
@@ -574,7 +595,8 @@ run_abm_simulate <- function(startx, starty,
                              barrier_x2,
                              barrier_y1,
                              barrier_y2,
-                             p_cross
+                             p_cross,
+                             lookup
 ){
   .Call("_abmFences_cpp_abm_simulate",
         startx, starty,
@@ -623,6 +645,7 @@ run_abm_simulate <- function(startx, starty,
         barrier_x2,
         barrier_y1,
         barrier_y2,
-        p_cross
+        p_cross,
+        lookup
         )
 }

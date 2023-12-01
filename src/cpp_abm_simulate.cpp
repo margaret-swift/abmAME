@@ -1,5 +1,6 @@
 #include <Rcpp.h>
 #include <cmath>
+#include "windows.h" // for sleep, i.e. 2 secs = Sleep(2);
 #include "cpp_vonmises.h"
 #include "cpp_sample_options.h"
 #include "cpp_cycle_draw.h"
@@ -82,6 +83,9 @@
  //' @param barrier_y1 MAGGIE - y points for barrier start
  //' @param barrier_y2 MAGGIE - y points for barrier end
  //' @param p_cross - probability of crossing the barrier
+ //' @param lookup = lookup table where the second column is the matrix
+ //'  cell value being crossed, and the third column is the ID number of
+ //'  the barrier doing the crossing.
  //'---------------------------------------------------
  //'
  //' @return A list of simulated animal details to be passed and handled by R
@@ -143,7 +147,8 @@
      std::vector<double> barrier_x2,
      std::vector<double> barrier_y1,
      std::vector<double> barrier_y2,
-     std::vector<double> p_cross
+     std::vector<double> p_cross,
+     Rcpp::NumericMatrix lookup
  ){
 
    // DISTRIBUTION DRAW OBJECTS -------------------------------------------------
@@ -278,10 +283,11 @@
    // LOOP OVER EACH TIMESTEP
    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+   // LOGGING!
    int nstep = 50;
+   int stepcount = 0;
    int slice = std::floor(timesteps / nstep);
    bool dolog = timesteps > 1000;
-
    if (dolog) {
      std::cout << "[" << std::string(nstep, '.') << "]" << std::endl;
      std::cout << " ";
@@ -291,7 +297,10 @@
    for(int i = 1, a = nopt, desi = 0; i < timesteps; i++){
 
      // progress marker
-     if ( (dolog) && (i > 0) && (i % slice == 0)) { std::cout << '|'; }
+     if ( (dolog) && (i > 0) && (i % slice == 0)) {
+       std::cout << '|';
+       stepcount++;
+     }
 
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // CYCLES
@@ -406,6 +415,7 @@
 
          // MAGGIE: RASTER CHECK #1
          // std::cout << "resting raster check" << std::endl;
+         // Sleep(2);
          des_Options = cpp_get_values_rast(desMatrix, envExt, shelter_locs_x, shelter_locs_y);
          chosenDes = cpp_sample_options(des_Options);
 
@@ -442,6 +452,7 @@
 
          // MAGGIE: RASTER CHECK #2
          // std::cout << "forage raster check" << std::endl;
+         // Sleep(2);
          des_forageOptions = cpp_get_values_rast(desMatrix, envExt, x_forageOptions, y_forageOptions);
 
          chosenDes = cpp_sample_options(des_forageOptions);
@@ -544,33 +555,57 @@
        // CHECK POTENTIAL BARRIER CROSSING BEHAVIOR
        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+       std::cout << std::endl << "checking barrier crossings" << std::endl;
        // step 1: create a line between current point and new point
-       std::vector<double> origin = {x_Options[0], y_Options[0]};
-       std::vector<double> target = {x_Options[j], y_Options[j]};
+       double x0 = x_Options[0];
+       double y0 = y_Options[0];
+       double xj = x_Options[j];
+       double yj = y_Options[j];
 
-       // step 2: check if this line intersects with any barrier
+       // step 2: only check barriers within 1000m of the animal
+       // BOOKMARK : this needs to be based on step length at some point
+       // this is where we call the lookup table :)
+
+       // step 3: check if the origin-target line intersects with any barrier nearby
        // https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
-       bool isblocked = cpp_check_intersection(origin, target, // these are individual points
-                                               barrier_x1, barrier_x2, // these are vectors
-                                               barrier_y1, barrier_y2,
-                                               p_cross);
-
-       // step 3: if there is an intersection, discard with probability 1-P
-       if (isblocked) {
-
-         // If there have been too many trials, keep the most recent draw
-         //   and alert the user.
-         if (trial_count >= trial_kill) {
-           std::cout << "WARNING ele cannot find target that doesn't cross " <<
-             "the barrier! Aborting selection at DRAW " << i << ", option " <<
-               j << ".\n";
-         // otherwise, the intersection blocks the individual; redraw but
-         // increase the trial counter
-         } else {
-           trial_count++;
-           continue; // THROW AWAY current draw
-         }
+       if (condition) {
+         std::cout << "checking " << i << ", " << j << std::endl;
+         std::vector<double> origin = {x0, y0};
+         std::vector<double> target = {xj, yj};
+         bool isblocked = cpp_check_intersection( origin, target, // these are individual points
+                                             barrier_x1, barrier_x2, // these are vectors
+                                             barrier_y1, barrier_y2,
+                                             p_cross);
+       } else {
+         bool isblocked = false;
+         std::cout << "no barriers nearby" << std::endl;
        }
+
+       // std::cout << "is blocked?" << isblocked << std::endl;
+       // // step 4: if there is an intersection, discard with probability 1-P
+       // if (isblocked) {
+       //   std::cout << "  ELE CROSSES FENCE!!!" << std::endl;
+       //
+       //   if (dolog) {
+       //     std::cout << "[" << std::string(nstep, '.') << "]" << std::endl;
+       //     std::cout << " " << std::string(stepcount, '|');
+       //   }
+       //
+       //   // If there have been too many trials, keep the most recent draw
+       //   //   and alert the user.
+       //   if (trial_count >= trial_kill) {
+       //     std::cout << "WARNING ele cannot find target that doesn't cross " <<
+       //       "the barrier! Aborting selection at DRAW " << i << ", option " <<
+       //         j << ".\n";
+       //   // otherwise, the intersection blocks the individual; redraw but
+       //   // increase the trial counter
+       //   } else {
+       //     trial_count++;
+       //     continue; // THROW AWAY current draw
+       //   }
+       // } else {
+       // std::cout << "  ELE DID NOT CROSS FENCE!!!" << std::endl;
+       // }
 
        // add in which step the options are for
        step_Options[j] = i;
