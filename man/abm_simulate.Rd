@@ -26,12 +26,7 @@ abm_simulate(
   behave_Tmat,
   rest_Cycle,
   additional_Cycles,
-  shelteringMatrix,
-  foragingMatrix,
-  movementMatrix,
-  barrier_sf,
-  perms,
-  checktime = FALSE
+  landscape_data
 )
 }
 \arguments{
@@ -115,18 +110,12 @@ define the resting/active cycle. Ideal for defining circadian rhythm.}
 for defining patterns that operate alongside circadian rhythm, e.g.,
 seasonal shifts.}
 
-\item{shelteringMatrix}{A RASTER describing the sheltering quality of the
-landscape. Higher values are the best shelter quality.}
-
-\item{foragingMatrix}{A RASTER describing the foraging quality of the
-landscape. Higher values are the best foraging areas.}
-
-\item{movementMatrix}{A RASTER describing the movement ease of the landscape.
-Higher values are the easiest to move through.}
-
-\item{barrier_sf}{barrier simple features list}
-
-\item{perms}{list of permeabilities}
+\item{landscape_data}{a list of landscape data:
+\enumerate{
+\item list of landscape rasters-turned-matrices
+\item list with extent and resolution of rasters
+\item data frame with start and end points and permeability of barriers
+}}
 
 \item{checktime}{boolean if you want to more accurately estimate time req'd}
 }

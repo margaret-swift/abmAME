@@ -18,7 +18,7 @@
 #' hist(sampleOut)
 #' table(sampleOut) / 10000
 #'
-#' @useDynLib abmFences
+#' @useDynLib abmAME
 #' @export
 #'
 sample_options <- function(W){

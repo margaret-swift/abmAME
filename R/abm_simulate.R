@@ -63,14 +63,10 @@
 #'   \eqn{\phi} and \eqn{\tau} to define any additional activity cycles. Ideal
 #'   for defining patterns that operate alongside circadian rhythm, e.g.,
 #'   seasonal shifts.
-#' @param shelteringMatrix A RASTER describing the sheltering quality of the
-#'   landscape. Higher values are the best shelter quality.
-#' @param foragingMatrix A RASTER describing the foraging quality of the
-#'   landscape. Higher values are the best foraging areas.
-#' @param movementMatrix A RASTER describing the movement ease of the landscape.
-#'   Higher values are the easiest to move through.
-#' @param barrier_sf barrier simple features list
-#' @param perms list of permeabilities
+#' @param landscape_data a list of landscape data:
+#'  1. list of landscape rasters-turned-matrices
+#'  2. list with extent and resolution of rasters
+#'  3. data frame with start and end points and permeability of barriers
 #' @param checktime boolean if you want to more accurately estimate time req'd
 #'
 #' @return A list with the following components: 1. "locations" The dataframe
@@ -106,7 +102,7 @@
 #'   definition, [cycle_draw()] for further guidance on activity cycle
 #'   definition. [cpp_abm_simulate()] is the C++ function that is called.
 #'
-#' @useDynLib abmFences
+#' @useDynLib abmAME
 #' @export
 #'
 abm_simulate <- function(start, timesteps,
@@ -132,13 +128,7 @@ abm_simulate <- function(start, timesteps,
                          rest_Cycle,
                          additional_Cycles,
 
-                         shelteringMatrix,
-                         foragingMatrix,
-                         movementMatrix,
-
-                         barrier_sf,
-                         perms,
-                         checktime=FALSE){
+                         landscape_data){
 
 
 # Verify/check inputs -----------------------------------------------------
@@ -246,50 +236,22 @@ abm_simulate <- function(start, timesteps,
        ){
       stop("The additional cycles data.frame (cycleMat), if needed, requires four numeric columns")
     }}
-  ## shelteringMatrix
-  ## foragingMatrix
-  ## movementMatrix
   # if(
-  #    !all(shelteringMatrix <= 1) |
-  #    !all(foragingMatrix <= 1) |
-  #    !all(movementMatrix <= 1) |
-  #    !all(shelteringMatrix >= -99.9) |
-  #    !all(foragingMatrix >= -99.9) |
-  #    !all(movementMatrix >= -99.9)
+  #   !all(all(terra::ext(shelteringMatrix) == terra::ext(movementMatrix)),
+  #       all(terra::ext(foragingMatrix) == terra::ext(shelteringMatrix)),
+  #       all(terra::ext(movementMatrix) == terra::ext(foragingMatrix)))
   # ){
-  #   stop("All the landscape layers (shelterMatrix, forageMatrix, moveMatrix)
-  #      should be numeric matricies, with values between -99.9 and 1")
+  #   stop("All environmental layers require the same dimensions (shelteringMatrix,
+  #        foragingMatrix, movementMatrix)")
   # }
-  # if(any(shelterLocations[,1] > nrow(shelteringMatrix)) |
-  #    any(shelterLocations[,2] > ncol(shelteringMatrix)) |
-  #    any(shelterLocations[,1] < 0) |
-  #    any(shelterLocations[,2] < 0)){
-  #   stop("Shelter locations (shelterLocations) must be contained within environmental rasters
-  #        (shelteringMatrix, foragingMatrix, movementMatrix)")
+  # if(
+  #   !all(all(terra::res(shelteringMatrix) == terra::res(movementMatrix)),
+  #        all(terra::res(foragingMatrix) == terra::res(shelteringMatrix)),
+  #        all(terra::res(movementMatrix) == terra::res(foragingMatrix)))
+  # ){
+  #   stop("All environmental layers require the same resolution (shelteringMatrix,
+  #        foragingMatrix, movementMatrix)")
   # }
-  # if(any(start[1] > nrow(shelteringMatrix)) |
-  #    any(start[2] > ncol(shelteringMatrix)) |
-  #    any(start[1] < 0) |
-  #    any(start[2] < 0)){
-  #   stop("Start location (start) must be contained within environmental rasters
-  #        (shelteringMatrix, foragingMatrix, movementMatrix)")
-  # }
-  if(
-    !all(all(terra::ext(shelteringMatrix) == terra::ext(movementMatrix)),
-        all(terra::ext(foragingMatrix) == terra::ext(shelteringMatrix)),
-        all(terra::ext(movementMatrix) == terra::ext(foragingMatrix)))
-  ){
-    stop("All environmental layers require the same dimensions (shelteringMatrix,
-         foragingMatrix, movementMatrix)")
-  }
-  if(
-    !all(all(terra::res(shelteringMatrix) == terra::res(movementMatrix)),
-         all(terra::res(foragingMatrix) == terra::res(shelteringMatrix)),
-         all(terra::res(movementMatrix) == terra::res(foragingMatrix)))
-  ){
-    stop("All environmental layers require the same resolution (shelteringMatrix,
-         foragingMatrix, movementMatrix)")
-  }
 
 
 # Rearrange inputs for C++ ------------------------------------------------
@@ -307,52 +269,14 @@ abm_simulate <- function(start, timesteps,
   avoidPoints_yIN <- avoidPoints[,2]
 
 
-  ### RASTERS ###z
-  # transforming raster to matrix with size and extent info
-  createMat <- function(rast) {
-    mat <- as.matrix(rast, wide=TRUE)
-    mat[is.nan(mat)] <- -99.9
-    mat
-  }
-  checkMat <- function(mat) {
-    minCheck <- min(mat, na.rm=TRUE) >= -99.9
-    maxCheck <- max(mat, na.rm=TRUE) <= 1
-    flag = all(minCheck, maxCheck)
-    flag
-  }
+  # LANDSCAPE DATA
+  matrices <- landscape_data[[1]]
+  envExt <- landscape_data[[2]]
+  barriers <- landscape_data[[3]]
 
-  message('creating raster matrices for landscape variables...')
-  moveMat  <- createMat(movementMatrix)
-  sheltMat <- createMat(shelteringMatrix)
-  forageMat<- createMat(foragingMatrix)
-
-  if(
-     !checkMat(sheltMat) |
-     !checkMat(moveMat) |
-     !checkMat(forageMat)
-  ){
-    stop("All the landscape layers (shelterMatrix, forageMatrix, moveMatrix)
-       should be numeric matricies, with values between -99.9 and 1")
-  }
-
-  # getting environmental resolution values
-  ext <- unlist(as.list(terra::ext(shelteringMatrix)), use.names=FALSE)
-  res <- terra::res(ELE_shelter)
-  envExt <-c(ext, res)
-
-
-  ### BARRIERS ###
-
-  # create a raster matrix for cell lookup -- which cells are crossed by which
-  inxRast = shelteringMatrix
-  values(inxRast)[,] <- 1:ncell(inxRast)
-  inxMat <- createMat(inxRast)
-
-  # Generate the barrier dataset by segmenting sf lines
-  message('generating barriers...')
-  barrier_data = generateBarriers(barrier_sf, inxRast, perms, progress=FALSE)
-  barrier <- barrier_data[[1]]
-  lookup <- barrier_data[[2]]
+  sheltMat = matrices[[1]]
+  forageMat = matrices[[2]]
+  moveMat = matrices[[3]]
 
   ### CYCLE ###
   # how many additional cycles have been provided, and get that value ready for
@@ -362,78 +286,6 @@ abm_simulate <- function(start, timesteps,
   } else {
     nAdditionalCycles <- nrow(additional_Cycles)
   }
-
-  # if (checktime) {
-  #   message('checking time to run full simulation...')
-  #   t0 <- proc.time()[['elapsed']]
-  #   nstep = 100
-  #   testres <- run_abm_simulate(
-  #     startx = startxIN,
-  #     starty = startyIN,
-  #     timesteps = nstep,
-  #     ndes = des_options,
-  #     nopt = options,
-  #
-  #     shelter_locs_x = shelter_locs_xIN,
-  #     shelter_locs_y = shelter_locs_yIN,
-  #     sSiteSize = shelterSize,
-  #     avoidPoints_x = avoidPoints_xIN,
-  #     avoidPoints_y = avoidPoints_yIN,
-  #
-  #     k_desRange = destinationRange[1],
-  #     s_desRange = destinationRange[2],
-  #     mu_desDir = destinationDirection[1],
-  #     k_desDir = destinationDirection[2],
-  #     destinationTrans = destinationTransformation,
-  #     destinationMod = destinationModifier,
-  #     avoidTrans = avoidTransformation,
-  #     avoidMod = avoidModifier,
-  #
-  #     k_step = k_step,
-  #     s_step = s_step,
-  #     mu_angle = mu_angle,
-  #     k_angle = k_angle,
-  #     rescale = rescale_step2cell,
-  #     b0_Options = behave_Tmat[1,],
-  #     b1_Options = behave_Tmat[2,],
-  #     b2_Options = behave_Tmat[3,],
-  #
-  #     rest_Cycle_A = rest_Cycle[1],
-  #     rest_Cycle_M = rest_Cycle[2],
-  #     rest_Cycle_PHI = rest_Cycle[3],
-  #     rest_Cycle_TAU = rest_Cycle[4],
-  #     addCycles = nAdditionalCycles,
-  #     add_Cycle_A = additional_Cycles[,1],
-  #     add_Cycle_M = additional_Cycles[,2],
-  #     add_Cycle_PHI = additional_Cycles[,3],
-  #     add_Cycle_TAU = additional_Cycles[,4],
-  #
-  #     shelterMatrix = sheltMat,
-  #     forageMatrix = forageMat,
-  #     moveMatrix = moveMat,
-  #     envExt = envExt,
-  #
-  #     barrier_x1,
-  #     barrier_x2,
-  #     barrier_y1,
-  #     barrier_y2,
-  #     p_cross
-  #   )
-  #   t1 <- proc.time()[['elapsed']]
-  #   persec <- (t1-t0) / nstep
-  # } else { persec = 0.0034 }
-  # est.time <- timesteps * persec
-  #
-  # message('running simulation...')
-  # message(paste0('start time: ', Sys.time()))
-  # message(paste0('estimated time to run ', timesteps, ' iterations: ', est.time, " seconds"))
-  # message(paste0('estimated end time: ', Sys.time()+est.time))
-
-  # input all into the Cpp function
-  # tictoc::tic()
-  # Sys.sleep(2)
-  # message("OKAY STARTING NOW")
-  # Sys.sleep(2)
   res <- run_abm_simulate(
     startx = startxIN,
     starty = startyIN,
@@ -478,11 +330,8 @@ abm_simulate <- function(start, timesteps,
     shelterMatrix = sheltMat,
     forageMatrix = forageMat,
     moveMatrix = moveMat,
-    inxMat = inxMat,
     envExt = envExt,
-
-    barrier,
-    lookup
+    barrier = barriers
   )
   # tictoc::toc()
   # tidy up all objects parse via the
@@ -580,12 +429,8 @@ run_abm_simulate <- function(startx, starty,
                              shelterMatrix,
                              forageMatrix,
                              moveMatrix,
-                             inxMat,
-
                              envExt,
-
-                             barrier,
-                             lookup
+                             barrier
 ){
   .Call("_abmFences_cpp_abm_simulate",
         startx, starty,
@@ -627,11 +472,7 @@ run_abm_simulate <- function(startx, starty,
         shelterMatrix,
         forageMatrix,
         moveMatrix,
-        inxMat,
-
         envExt,
-
-        barrier,
-        lookup
+        barrier
         )
 }

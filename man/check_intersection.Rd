@@ -9,10 +9,6 @@
 \item{target}{target location}
 
 \item{BARRIERS}{barrier segment endpoint data}
-
-\item{ENVEXT}{environmental extent for raster data}
-
-\item{LOOKUP}{lookup table for barrier crossings}
 }
 \value{
 A Boolean of whether any barrier is crossed

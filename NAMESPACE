@@ -2,11 +2,11 @@
 
 export(abm_simulate)
 export(cycle_draw)
-export(generateBarriers)
+export(generateLandscapeData)
 export(sample_options)
 export(vonmises)
 import(nngeo)
 import(sf)
 import(terra)
 importFrom(Rcpp,sourceCpp)
-useDynLib(abmFences)
+useDynLib(abmAME)

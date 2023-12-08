@@ -76,13 +76,9 @@
  //'
  //'---------------------------------------------------
  //' MAGGIE'S ADDITIONAL PARAMETERS FOR FENCE PROJECT
- //' @param inxMatrix matrix with index numbers
  //' @param envExt extent and resolution for environmental matrices;
  //'                      in order: xmin, xmax, ymin, ymax, xres, yres
  //' @param barriers = barriers table with columns: x, y, xend, yend, perm, id
- //' @param lookup = lookup table where the second column is the matrix
- //'  cell value being crossed, and the third column is the ID number of
- //'  the barrier doing the crossing.
  //'---------------------------------------------------
  //'
  //' @return A list of simulated animal details to be passed and handled by R
@@ -138,12 +134,8 @@
      Rcpp::NumericMatrix shelterMatrix,
      Rcpp::NumericMatrix forageMatrix,
      Rcpp::NumericMatrix moveMatrix,
-     Rcpp::NumericMatrix inxMatrix,
-
      std::vector<double> envExt,
-
-     Rcpp::NumericMatrix barriers,
-     Rcpp::NumericMatrix lookup
+     Rcpp::NumericMatrix barriers
  ){
 
    // DISTRIBUTION DRAW OBJECTS -------------------------------------------------
@@ -555,13 +547,6 @@
        double y0 = y_Options[0];
        double xj = x_Options[j];
        double yj = y_Options[j];
-       std::vector<double> xlocs_i = {x0};
-       std::vector<double> ylocs_i = {y0};
-
-       // // step 1.5 get index of origin and draw a 20x20 buffer around
-       std::vector<double> inx_p = cpp_get_values_rast(inxMatrix, envExt, xlocs_i, ylocs_i);
-       double inx_i = inx_p[0];
-
 
        // step 2: check if the origin-target line intersects with any barrier nearby
        // https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
@@ -569,8 +554,7 @@
        std::vector<double> target = {xj, yj};
 
        bool isblocked = cpp_check_intersection( origin, target, // these are individual points
-                                                inx_i,
-                                                barriers, lookup, inxMatrix);
+                                                barriers);
 
        // step 3: if there is an intersection, discard with probability 1-P
        if (isblocked) {

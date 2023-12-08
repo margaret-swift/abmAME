@@ -21,7 +21,7 @@
 #'   (2001). R package version 0.2-6.
 #'   https://CRAN.R-project.org/package=CircStats
 #'
-#' @useDynLib abmFences
+#' @useDynLib abmAME
 #' @export
 #'
 #' @examples

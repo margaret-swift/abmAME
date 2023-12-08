@@ -41,7 +41,7 @@
 #' PHI = 24 / 12,
 #' TAU = 12)
 #'
-#' @useDynLib abmFences
+#' @useDynLib abmAME
 #' @export
 #'
 cycle_draw <- function(TIME, A,  M, PHI, TAU){

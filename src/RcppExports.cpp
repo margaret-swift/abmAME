@@ -11,8 +11,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // cpp_abm_simulate
-Rcpp::List cpp_abm_simulate(double startx, double starty, int timesteps, int ndes, int nopt, std::vector<double> shelter_locs_x, std::vector<double> shelter_locs_y, double sSiteSize, std::vector<double> avoidPoints_x, std::vector<double> avoidPoints_y, double k_desRange, double s_desRange, double mu_desDir, double k_desDir, int destinationTrans, double destinationMod, int avoidTrans, double avoidMod, std::vector<double> k_step, std::vector<double> s_step, std::vector<double> mu_angle, std::vector<double> k_angle, double rescale, std::vector<double> b0_Options, std::vector<double> b1_Options, std::vector<double> b2_Options, double rest_Cycle_A, double rest_Cycle_M, double rest_Cycle_PHI, double rest_Cycle_TAU, int addCycles, std::vector<double> add_Cycle_A, std::vector<double> add_Cycle_M, std::vector<double> add_Cycle_PHI, std::vector<double> add_Cycle_TAU, Rcpp::NumericMatrix shelterMatrix, Rcpp::NumericMatrix forageMatrix, Rcpp::NumericMatrix moveMatrix, Rcpp::NumericMatrix inxMatrix, std::vector<double> envExt, Rcpp::NumericMatrix barriers, Rcpp::NumericMatrix lookup);
-RcppExport SEXP _abmFences_cpp_abm_simulate(SEXP startxSEXP, SEXP startySEXP, SEXP timestepsSEXP, SEXP ndesSEXP, SEXP noptSEXP, SEXP shelter_locs_xSEXP, SEXP shelter_locs_ySEXP, SEXP sSiteSizeSEXP, SEXP avoidPoints_xSEXP, SEXP avoidPoints_ySEXP, SEXP k_desRangeSEXP, SEXP s_desRangeSEXP, SEXP mu_desDirSEXP, SEXP k_desDirSEXP, SEXP destinationTransSEXP, SEXP destinationModSEXP, SEXP avoidTransSEXP, SEXP avoidModSEXP, SEXP k_stepSEXP, SEXP s_stepSEXP, SEXP mu_angleSEXP, SEXP k_angleSEXP, SEXP rescaleSEXP, SEXP b0_OptionsSEXP, SEXP b1_OptionsSEXP, SEXP b2_OptionsSEXP, SEXP rest_Cycle_ASEXP, SEXP rest_Cycle_MSEXP, SEXP rest_Cycle_PHISEXP, SEXP rest_Cycle_TAUSEXP, SEXP addCyclesSEXP, SEXP add_Cycle_ASEXP, SEXP add_Cycle_MSEXP, SEXP add_Cycle_PHISEXP, SEXP add_Cycle_TAUSEXP, SEXP shelterMatrixSEXP, SEXP forageMatrixSEXP, SEXP moveMatrixSEXP, SEXP inxMatrixSEXP, SEXP envExtSEXP, SEXP barriersSEXP, SEXP lookupSEXP) {
+Rcpp::List cpp_abm_simulate(double startx, double starty, int timesteps, int ndes, int nopt, std::vector<double> shelter_locs_x, std::vector<double> shelter_locs_y, double sSiteSize, std::vector<double> avoidPoints_x, std::vector<double> avoidPoints_y, double k_desRange, double s_desRange, double mu_desDir, double k_desDir, int destinationTrans, double destinationMod, int avoidTrans, double avoidMod, std::vector<double> k_step, std::vector<double> s_step, std::vector<double> mu_angle, std::vector<double> k_angle, double rescale, std::vector<double> b0_Options, std::vector<double> b1_Options, std::vector<double> b2_Options, double rest_Cycle_A, double rest_Cycle_M, double rest_Cycle_PHI, double rest_Cycle_TAU, int addCycles, std::vector<double> add_Cycle_A, std::vector<double> add_Cycle_M, std::vector<double> add_Cycle_PHI, std::vector<double> add_Cycle_TAU, Rcpp::NumericMatrix shelterMatrix, Rcpp::NumericMatrix forageMatrix, Rcpp::NumericMatrix moveMatrix, std::vector<double> envExt, Rcpp::NumericMatrix barriers);
+RcppExport SEXP _abmAME_cpp_abm_simulate(SEXP startxSEXP, SEXP startySEXP, SEXP timestepsSEXP, SEXP ndesSEXP, SEXP noptSEXP, SEXP shelter_locs_xSEXP, SEXP shelter_locs_ySEXP, SEXP sSiteSizeSEXP, SEXP avoidPoints_xSEXP, SEXP avoidPoints_ySEXP, SEXP k_desRangeSEXP, SEXP s_desRangeSEXP, SEXP mu_desDirSEXP, SEXP k_desDirSEXP, SEXP destinationTransSEXP, SEXP destinationModSEXP, SEXP avoidTransSEXP, SEXP avoidModSEXP, SEXP k_stepSEXP, SEXP s_stepSEXP, SEXP mu_angleSEXP, SEXP k_angleSEXP, SEXP rescaleSEXP, SEXP b0_OptionsSEXP, SEXP b1_OptionsSEXP, SEXP b2_OptionsSEXP, SEXP rest_Cycle_ASEXP, SEXP rest_Cycle_MSEXP, SEXP rest_Cycle_PHISEXP, SEXP rest_Cycle_TAUSEXP, SEXP addCyclesSEXP, SEXP add_Cycle_ASEXP, SEXP add_Cycle_MSEXP, SEXP add_Cycle_PHISEXP, SEXP add_Cycle_TAUSEXP, SEXP shelterMatrixSEXP, SEXP forageMatrixSEXP, SEXP moveMatrixSEXP, SEXP envExtSEXP, SEXP barriersSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -54,33 +54,28 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type shelterMatrix(shelterMatrixSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type forageMatrix(forageMatrixSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type moveMatrix(moveMatrixSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type inxMatrix(inxMatrixSEXP);
     Rcpp::traits::input_parameter< std::vector<double> >::type envExt(envExtSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type barriers(barriersSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type lookup(lookupSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_abm_simulate(startx, starty, timesteps, ndes, nopt, shelter_locs_x, shelter_locs_y, sSiteSize, avoidPoints_x, avoidPoints_y, k_desRange, s_desRange, mu_desDir, k_desDir, destinationTrans, destinationMod, avoidTrans, avoidMod, k_step, s_step, mu_angle, k_angle, rescale, b0_Options, b1_Options, b2_Options, rest_Cycle_A, rest_Cycle_M, rest_Cycle_PHI, rest_Cycle_TAU, addCycles, add_Cycle_A, add_Cycle_M, add_Cycle_PHI, add_Cycle_TAU, shelterMatrix, forageMatrix, moveMatrix, inxMatrix, envExt, barriers, lookup));
+    rcpp_result_gen = Rcpp::wrap(cpp_abm_simulate(startx, starty, timesteps, ndes, nopt, shelter_locs_x, shelter_locs_y, sSiteSize, avoidPoints_x, avoidPoints_y, k_desRange, s_desRange, mu_desDir, k_desDir, destinationTrans, destinationMod, avoidTrans, avoidMod, k_step, s_step, mu_angle, k_angle, rescale, b0_Options, b1_Options, b2_Options, rest_Cycle_A, rest_Cycle_M, rest_Cycle_PHI, rest_Cycle_TAU, addCycles, add_Cycle_A, add_Cycle_M, add_Cycle_PHI, add_Cycle_TAU, shelterMatrix, forageMatrix, moveMatrix, envExt, barriers));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_check_intersection
-double cpp_check_intersection(std::vector<double> origin, std::vector<double> target, int inx, Rcpp::NumericMatrix BARRIERS, Rcpp::NumericMatrix LOOKUP, Rcpp::NumericMatrix INXMAT);
-RcppExport SEXP _abmFences_cpp_check_intersection(SEXP originSEXP, SEXP targetSEXP, SEXP inxSEXP, SEXP BARRIERSSEXP, SEXP LOOKUPSEXP, SEXP INXMATSEXP) {
+double cpp_check_intersection(std::vector<double> origin, std::vector<double> target, Rcpp::NumericMatrix BARRIERS);
+RcppExport SEXP _abmAME_cpp_check_intersection(SEXP originSEXP, SEXP targetSEXP, SEXP BARRIERSSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::vector<double> >::type origin(originSEXP);
     Rcpp::traits::input_parameter< std::vector<double> >::type target(targetSEXP);
-    Rcpp::traits::input_parameter< int >::type inx(inxSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type BARRIERS(BARRIERSSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type LOOKUP(LOOKUPSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type INXMAT(INXMATSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_check_intersection(origin, target, inx, BARRIERS, LOOKUP, INXMAT));
+    rcpp_result_gen = Rcpp::wrap(cpp_check_intersection(origin, target, BARRIERS));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_cycle_draw
 double cpp_cycle_draw(double TIME, double A, double M, double PHI, double TAU);
-RcppExport SEXP _abmFences_cpp_cycle_draw(SEXP TIMESEXP, SEXP ASEXP, SEXP MSEXP, SEXP PHISEXP, SEXP TAUSEXP) {
+RcppExport SEXP _abmAME_cpp_cycle_draw(SEXP TIMESEXP, SEXP ASEXP, SEXP MSEXP, SEXP PHISEXP, SEXP TAUSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -95,7 +90,7 @@ END_RCPP
 }
 // cpp_get_values
 std::vector<double> cpp_get_values(Rcpp::NumericMatrix MATRIX, std::vector<double> XLOCS, std::vector<double> YLOCS);
-RcppExport SEXP _abmFences_cpp_get_values(SEXP MATRIXSEXP, SEXP XLOCSSEXP, SEXP YLOCSSEXP) {
+RcppExport SEXP _abmAME_cpp_get_values(SEXP MATRIXSEXP, SEXP XLOCSSEXP, SEXP YLOCSSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -108,7 +103,7 @@ END_RCPP
 }
 // cpp_get_values_rast
 std::vector<double> cpp_get_values_rast(Rcpp::NumericMatrix RASTER, std::vector<double> ENVEXT, std::vector<double> XLOCS, std::vector<double> YLOCS);
-RcppExport SEXP _abmFences_cpp_get_values_rast(SEXP RASTERSEXP, SEXP ENVEXTSEXP, SEXP XLOCSSEXP, SEXP YLOCSSEXP) {
+RcppExport SEXP _abmAME_cpp_get_values_rast(SEXP RASTERSEXP, SEXP ENVEXTSEXP, SEXP XLOCSSEXP, SEXP YLOCSSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -122,7 +117,7 @@ END_RCPP
 }
 // cpp_max
 double cpp_max(std::vector<double> x);
-RcppExport SEXP _abmFences_cpp_max(SEXP xSEXP) {
+RcppExport SEXP _abmAME_cpp_max(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -133,7 +128,7 @@ END_RCPP
 }
 // cpp_min
 double cpp_min(std::vector<double> x);
-RcppExport SEXP _abmFences_cpp_min(SEXP xSEXP) {
+RcppExport SEXP _abmAME_cpp_min(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -144,7 +139,7 @@ END_RCPP
 }
 // cpp_sample_options
 int cpp_sample_options(std::vector<double> W);
-RcppExport SEXP _abmFences_cpp_sample_options(SEXP WSEXP) {
+RcppExport SEXP _abmAME_cpp_sample_options(SEXP WSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -155,7 +150,7 @@ END_RCPP
 }
 // cpp_vonmises
 std::vector<double> cpp_vonmises(int N, double MU, double KAPPA);
-RcppExport SEXP _abmFences_cpp_vonmises(SEXP NSEXP, SEXP MUSEXP, SEXP KAPPASEXP) {
+RcppExport SEXP _abmAME_cpp_vonmises(SEXP NSEXP, SEXP MUSEXP, SEXP KAPPASEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -167,20 +162,29 @@ BEGIN_RCPP
 END_RCPP
 }
 
+RcppExport SEXP _abmFences_cpp_abm_simulate(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
+RcppExport SEXP _abmFences_cpp_cycle_draw(void *, void *, void *, void *, void *);
+RcppExport SEXP _abmFences_cpp_sample_options(void *);
+RcppExport SEXP _abmFences_cpp_vonmises(void *, void *, void *);
+
 static const R_CallMethodDef CallEntries[] = {
-    {"_abmFences_cpp_abm_simulate", (DL_FUNC) &_abmFences_cpp_abm_simulate, 42},
-    {"_abmFences_cpp_check_intersection", (DL_FUNC) &_abmFences_cpp_check_intersection, 6},
-    {"_abmFences_cpp_cycle_draw", (DL_FUNC) &_abmFences_cpp_cycle_draw, 5},
-    {"_abmFences_cpp_get_values", (DL_FUNC) &_abmFences_cpp_get_values, 3},
-    {"_abmFences_cpp_get_values_rast", (DL_FUNC) &_abmFences_cpp_get_values_rast, 4},
-    {"_abmFences_cpp_max", (DL_FUNC) &_abmFences_cpp_max, 1},
-    {"_abmFences_cpp_min", (DL_FUNC) &_abmFences_cpp_min, 1},
-    {"_abmFences_cpp_sample_options", (DL_FUNC) &_abmFences_cpp_sample_options, 1},
-    {"_abmFences_cpp_vonmises", (DL_FUNC) &_abmFences_cpp_vonmises, 3},
+    {"_abmAME_cpp_abm_simulate", (DL_FUNC) &_abmAME_cpp_abm_simulate, 40},
+    {"_abmAME_cpp_check_intersection", (DL_FUNC) &_abmAME_cpp_check_intersection, 3},
+    {"_abmAME_cpp_cycle_draw", (DL_FUNC) &_abmAME_cpp_cycle_draw, 5},
+    {"_abmAME_cpp_get_values", (DL_FUNC) &_abmAME_cpp_get_values, 3},
+    {"_abmAME_cpp_get_values_rast", (DL_FUNC) &_abmAME_cpp_get_values_rast, 4},
+    {"_abmAME_cpp_max", (DL_FUNC) &_abmAME_cpp_max, 1},
+    {"_abmAME_cpp_min", (DL_FUNC) &_abmAME_cpp_min, 1},
+    {"_abmAME_cpp_sample_options", (DL_FUNC) &_abmAME_cpp_sample_options, 1},
+    {"_abmAME_cpp_vonmises", (DL_FUNC) &_abmAME_cpp_vonmises, 3},
+    {"_abmFences_cpp_abm_simulate",   (DL_FUNC) &_abmFences_cpp_abm_simulate,   40},
+    {"_abmFences_cpp_cycle_draw",     (DL_FUNC) &_abmFences_cpp_cycle_draw,      5},
+    {"_abmFences_cpp_sample_options", (DL_FUNC) &_abmFences_cpp_sample_options,  1},
+    {"_abmFences_cpp_vonmises",       (DL_FUNC) &_abmFences_cpp_vonmises,        3},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_abmFences(DllInfo *dll) {
+RcppExport void R_init_abmAME(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

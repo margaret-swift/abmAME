@@ -1,8 +1,6 @@
 #include <Rcpp.h>
 #include "cpp_get_values_rast.h"
 #include "windows.h"
-#include <vector>
-#include <numeric>
 
 using namespace std;
 
@@ -11,8 +9,6 @@ using namespace std;
 //' @param origin start location
 //' @param target target location
 //' @param BARRIERS  barrier segment endpoint data
-//' @param ENVEXT environmental extent for raster data
-//' @param LOOKUP lookup table for barrier crossings
 //' @return A Boolean of whether any barrier is crossed
 //' Useful resource: https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
 
@@ -78,31 +74,6 @@ bool doIntersect(Point p1, Point q1, Point p2, Point q2) {
 
   return 0; // Doesn't fall in any of the above cases
 }
-// bool findLookups(double inx,
-bool findLookups (int inx,
-                  Rcpp::NumericMatrix INXMAT) {
-  double n = 10.0;
-  double m = 10.0;
-  double p = static_cast<double>(INXMAT.ncol());
-
-  // grab leftmost corners of search box
-  double start_1 = static_cast<int>( inx - n - (m * p) );
-  double start_2 = static_cast<int>( inx - n + (m * p) );
-
-  // if either is negative, set to zero.
-  if (start_1 < 0) {start_1 = 0; }
-  if (start_2 < 0) {start_2 = 0; }
-  std::cout << "left corners: " << start_1 << ", " << start_2 << std::endl;
-
-  // generate sequence of left edge of search box
-  // std::vector<double> edge = std::iota( std::begin( start_1 ),
-  //                                       std::end( start_2 ),
-  //                                       p );
-
-  // for each point on left edge, generate sequence along search box row
-  // std::iota( std::begin( xmin ), std::end( xmax ), 0 );
-  return true;
-}
 // END HELPER FUNCTIONS ========================================================
 
 
@@ -112,10 +83,7 @@ bool findLookups (int inx,
 // [[Rcpp::export]]
 double cpp_check_intersection(std::vector<double> origin,
                               std::vector<double> target,
-                              int inx,
-                              Rcpp::NumericMatrix BARRIERS,
-                              Rcpp::NumericMatrix LOOKUP,
-                              Rcpp::NumericMatrix INXMAT
+                              Rcpp::NumericMatrix BARRIERS
                         ) {
 
   // declare output and within-function data types
@@ -123,36 +91,13 @@ double cpp_check_intersection(std::vector<double> origin,
   p = {origin[0], origin[1]};
   q = {target[0], target[1]};
 
-  // // get raster value for fence-crossing lookup
-  // std::cout << "POINT INDEX: " << inx << std::endl;
-  // bool answer = findLookups(inx, INXMAT);
-  // std::cout << answer << std::endl;
-
-  // calculate a vector of adjacent indices in lookup table
-  // std::vector<double> xvals = origin[0];
-  // std::vector<double> yvals = origin[0];
-  // std::vector<int> v(100) ; // vector with 100 ints.
-  // std::iota (std::begin(v), std::end(v), 0); // Fill with 0, 1, ..., 99.
-
-  // use those indices to filter the barrier
-  // std::vector<double> ids = BARRIERS(,5);
-  // std::cout << "IDS example: " << ids[1] << std::endl;
-
-  // std::vector<int> rows_include = {1,2,3,4};// find which ids are in our vector created above
-  // std::vector<int> rows_include = {1,2,3,4};
-  // Rcpp::NumericMatrix BARRIERS_FILT = BARRIERS(rows_include,);
-
-  // std::cout << "SUB MATRIX: " << BARRIERS_FILT << std::endl;
-
-
-
   // Loop over barrier segments and see if there's a crossing
   int L = BARRIERS.nrow();
   for (int i = 0; i < L; i++) {
 
     // get info for this barrier segment
-    barrier_p = { BARRIERS(i,0), BARRIERS(i,1) }; //{ barrier_x1[i], barrier_y1[i] };
-    barrier_q = { BARRIERS(i,2), BARRIERS(i,3) }; //{ barrier_x2[i], barrier_y2[i] };
+    barrier_p = { BARRIERS(i,0), BARRIERS(i,1) };
+    barrier_q = { BARRIERS(i,2), BARRIERS(i,3) };
 
     // Animal should step through the barrier with P=p_cross. Draw a random number
     // from the uniform distribution and compare to p_cross for this barrier segment
