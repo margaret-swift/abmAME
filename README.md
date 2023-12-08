@@ -1,12 +1,12 @@
-# abmFences
+# abmAME
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6951937.svg)](https://doi.org/10.5281/zenodo.6951937)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6951937.svg)](thttps://doi.org/10.5281/zenodo.6951937)
 
 --------------------------------------------------------------------------------
 
-This package is an extension of the *abmAnimalMovement* package, with additional functionality:
-- User can supply fences (or other linear features) along with perceived permeability (crossability) for the species/sex/individual being modeled.
-- Other functionality to follow
+abmAME, or "abmAnimalMovementExtension" extends the *[abmAnimalMovement](https://github.com/BenMMarshall/abmAnimalMovement)* package functionality to include:
+- User can now supply linear shapefiles of barriers (e.g. fences, roads, rivers) along with each barrier's perceived permeability ("crossability") for the species/sex/individual being modeled.
+- User can supply georefereced landscape rasters for the agents to use in simulated step choices (original code was matrix-based, not raster-based)
 
 --------------------------------------------------------------------------------
 
