@@ -53,6 +53,6 @@ cycle_draw <- function(TIME, A,  M, PHI, TAU){
     stop("All inputs must be numeric")
   }
 
-  .Call("_abmFences_cpp_cycle_draw",
+  .Call("_abmAME_cpp_cycle_draw",
         TIME, A,  M, PHI, TAU)
 }

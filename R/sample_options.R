@@ -27,6 +27,6 @@ sample_options <- function(W){
     stop("Weights (W) must be a vector of length > 0")
   }
 
-  .Call("_abmFences_cpp_sample_options",
+  .Call("_abmAME_cpp_sample_options",
         W)
 }

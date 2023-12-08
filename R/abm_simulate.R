@@ -432,7 +432,7 @@ run_abm_simulate <- function(startx, starty,
                              envExt,
                              barrier
 ){
-  .Call("_abmFences_cpp_abm_simulate",
+  .Call("_abmAME_cpp_abm_simulate",
         startx, starty,
         timesteps,
         ndes,

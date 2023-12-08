@@ -162,11 +162,6 @@ BEGIN_RCPP
 END_RCPP
 }
 
-RcppExport SEXP _abmFences_cpp_abm_simulate(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-RcppExport SEXP _abmFences_cpp_cycle_draw(void *, void *, void *, void *, void *);
-RcppExport SEXP _abmFences_cpp_sample_options(void *);
-RcppExport SEXP _abmFences_cpp_vonmises(void *, void *, void *);
-
 static const R_CallMethodDef CallEntries[] = {
     {"_abmAME_cpp_abm_simulate", (DL_FUNC) &_abmAME_cpp_abm_simulate, 40},
     {"_abmAME_cpp_check_intersection", (DL_FUNC) &_abmAME_cpp_check_intersection, 3},
@@ -177,10 +172,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_abmAME_cpp_min", (DL_FUNC) &_abmAME_cpp_min, 1},
     {"_abmAME_cpp_sample_options", (DL_FUNC) &_abmAME_cpp_sample_options, 1},
     {"_abmAME_cpp_vonmises", (DL_FUNC) &_abmAME_cpp_vonmises, 3},
-    {"_abmFences_cpp_abm_simulate",   (DL_FUNC) &_abmFences_cpp_abm_simulate,   40},
-    {"_abmFences_cpp_cycle_draw",     (DL_FUNC) &_abmFences_cpp_cycle_draw,      5},
-    {"_abmFences_cpp_sample_options", (DL_FUNC) &_abmFences_cpp_sample_options,  1},
-    {"_abmFences_cpp_vonmises",       (DL_FUNC) &_abmFences_cpp_vonmises,        3},
     {NULL, NULL, 0}
 };
 

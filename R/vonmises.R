@@ -39,6 +39,6 @@ vonmises <- function(N, MU, KAPPA){
     stop("MU and KAPPA inputs must be numeric")
   }
 
-  .Call("_abmFences_cpp_vonmises",
+  .Call("_abmAME_cpp_vonmises",
         N, MU, KAPPA)
 }
