@@ -76,13 +76,10 @@
  //'
  //'---------------------------------------------------
  //' MAGGIE'S ADDITIONAL PARAMETERS FOR FENCE PROJECT
- //' @param envExt MAGGIE - extent and resolution for environmental matrices;
+ //' @param inxMatrix matrix with index numbers
+ //' @param envExt extent and resolution for environmental matrices;
  //'                      in order: xmin, xmax, ymin, ymax, xres, yres
- //' @param barrier_x1 MAGGIE - x points for barrier start
- //' @param barrier_x2 MAGGIE - x points for barrier end
- //' @param barrier_y1 MAGGIE - y points for barrier start
- //' @param barrier_y2 MAGGIE - y points for barrier end
- //' @param p_cross - probability of crossing the barrier
+ //' @param barriers = barriers table with columns: x, y, xend, yend, perm, id
  //' @param lookup = lookup table where the second column is the matrix
  //'  cell value being crossed, and the third column is the ID number of
  //'  the barrier doing the crossing.
@@ -141,13 +138,11 @@
      Rcpp::NumericMatrix shelterMatrix,
      Rcpp::NumericMatrix forageMatrix,
      Rcpp::NumericMatrix moveMatrix,
+     Rcpp::NumericMatrix inxMatrix,
+
      std::vector<double> envExt,
 
-     std::vector<double> barrier_x1,
-     std::vector<double> barrier_x2,
-     std::vector<double> barrier_y1,
-     std::vector<double> barrier_y2,
-     std::vector<double> p_cross,
+     Rcpp::NumericMatrix barriers,
      Rcpp::NumericMatrix lookup
  ){
 
@@ -217,9 +212,7 @@
    // DESINATION OBJECTS -------------------------------------------------------
    int chosenDes = 0;
 
-
    // desMatrix will update depending on behaviour
-   // MAGGIE TODO: This needs to be a RASTER
    Rcpp::NumericMatrix desMatrix;
 
 
@@ -293,8 +286,8 @@
      std::cout << " ";
    }
 
-
    for(int i = 1, a = nopt, desi = 0; i < timesteps; i++){
+     // std::cout << "LOOP " << i << std::endl;
 
      // progress marker
      if ( (dolog) && (i > 0) && (i % slice == 0)) {
@@ -397,7 +390,6 @@
      }
 
 
-
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // CHOOSING APPROPRIATE DESTINATION
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -475,11 +467,13 @@
      des_y_Locations[i] = des_y;
      des_chosen[i] = chosenDes;
 
+
      // current distance from destination, needed to see if movement should
      // reduce because of proximity
      c_dist2 = std::pow((des_x - x_Locations[i-1]), 2) +
        std::pow((des_y - y_Locations[i-1]), 2);
      currDist = std::sqrt(c_dist2);
+
 
 
      //     ***************************************************************
@@ -500,12 +494,14 @@
      int j = 0;
      int trial_count = 0;
      int trial_kill = nopt * 10000;
+     int crosscount = 0;
+
      while (j < nopt) {
 
        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
        // INITIALIZE MOVEMENT PARAMETERS FOR THIS DRAW
        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+       // std::cout << "OPTION J = " << j << " OF " << nopt << std::endl;
        if(j == 0){ // repeat for each start of each step
          /* for each step set the location as the previously chosen location */
          x_Options[0] = x_Locations[i-1];
@@ -550,62 +546,54 @@
        x_Options[j] = x_Options[0] + cos(angle) * step;
        y_Options[j] = y_Options[0] + sin(angle) * step;
 
-
        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
        // CHECK POTENTIAL BARRIER CROSSING BEHAVIOR
        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-       std::cout << std::endl << "checking barrier crossings" << std::endl;
        // step 1: create a line between current point and new point
        double x0 = x_Options[0];
        double y0 = y_Options[0];
        double xj = x_Options[j];
        double yj = y_Options[j];
+       std::vector<double> xlocs_i = {x0};
+       std::vector<double> ylocs_i = {y0};
 
-       // step 2: only check barriers within 1000m of the animal
-       // BOOKMARK : this needs to be based on step length at some point
-       // this is where we call the lookup table :)
+       // // step 1.5 get index of origin and draw a 20x20 buffer around
+       std::vector<double> inx_p = cpp_get_values_rast(inxMatrix, envExt, xlocs_i, ylocs_i);
+       double inx_i = inx_p[0];
 
-       // step 3: check if the origin-target line intersects with any barrier nearby
+
+       // step 2: check if the origin-target line intersects with any barrier nearby
        // https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
-       if (condition) {
-         std::cout << "checking " << i << ", " << j << std::endl;
-         std::vector<double> origin = {x0, y0};
-         std::vector<double> target = {xj, yj};
-         bool isblocked = cpp_check_intersection( origin, target, // these are individual points
-                                             barrier_x1, barrier_x2, // these are vectors
-                                             barrier_y1, barrier_y2,
-                                             p_cross);
-       } else {
-         bool isblocked = false;
-         std::cout << "no barriers nearby" << std::endl;
-       }
+       std::vector<double> origin = {x0, y0};
+       std::vector<double> target = {xj, yj};
 
-       // std::cout << "is blocked?" << isblocked << std::endl;
-       // // step 4: if there is an intersection, discard with probability 1-P
-       // if (isblocked) {
-       //   std::cout << "  ELE CROSSES FENCE!!!" << std::endl;
-       //
-       //   if (dolog) {
-       //     std::cout << "[" << std::string(nstep, '.') << "]" << std::endl;
-       //     std::cout << " " << std::string(stepcount, '|');
-       //   }
-       //
-       //   // If there have been too many trials, keep the most recent draw
-       //   //   and alert the user.
-       //   if (trial_count >= trial_kill) {
-       //     std::cout << "WARNING ele cannot find target that doesn't cross " <<
-       //       "the barrier! Aborting selection at DRAW " << i << ", option " <<
-       //         j << ".\n";
-       //   // otherwise, the intersection blocks the individual; redraw but
-       //   // increase the trial counter
-       //   } else {
-       //     trial_count++;
-       //     continue; // THROW AWAY current draw
-       //   }
-       // } else {
-       // std::cout << "  ELE DID NOT CROSS FENCE!!!" << std::endl;
-       // }
+       bool isblocked = cpp_check_intersection( origin, target, // these are individual points
+                                                inx_i,
+                                                barriers, lookup, inxMatrix);
+
+       // step 3: if there is an intersection, discard with probability 1-P
+       if (isblocked) {
+         std::cout << "  ELE CROSSES FENCE!!!" << std::endl;
+         crosscount++;
+         if (dolog) {
+           std::cout << "[" << std::string(nstep, '.') << "]" << std::endl;
+           std::cout << " " << std::string(stepcount, '|');
+         }
+
+         // If there have been too many trials, keep the most recent draw
+         //   and alert the user.
+         if (trial_count >= trial_kill) {
+           std::cout << "WARNING ele cannot find target that doesn't cross " <<
+             "the barrier! Aborting selection at DRAW " << i << ", option " <<
+               j << ".\n";
+         // otherwise, the intersection blocks the individual; redraw but
+         // increase the trial counter
+         } else {
+           trial_count++;
+           continue; // THROW AWAY current draw
+         }
+       }
 
        // add in which step the options are for
        step_Options[j] = i;
@@ -622,12 +610,12 @@
        a++;
      } // END MOVEMENT LOOP
 
-
      // WEIGHTING OPTIONS BY DISTANCE FROM DESTINATION
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
      // MAGGIE: RASTER CHECK #3
-     // std::cout << "move raster check" << std::endl;
+     // std::cout << "fence crossings: " << crosscount << std::endl;
+     // std::cout << "checking move raster values at options" << std::endl;
      move_Options = cpp_get_values_rast(moveMatrix, envExt, x_Options, y_Options);
 
      /* here we need to adjust the movement objects so the animal prefers to head
@@ -754,7 +742,7 @@
      step_Locations[i] = i;
 
    }
-   if (dolog) {std::cout << "| 100% ! \\o/" << std::endl;}
+   if (dolog) {std::cout << "| 100% HOORAY! \\o/" << std::endl;}
 
    Rcpp::List INPUT_basic = Rcpp::List::create(
      Rcpp::Named("in_startx") = startx,

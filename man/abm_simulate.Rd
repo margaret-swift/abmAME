@@ -29,7 +29,8 @@ abm_simulate(
   shelteringMatrix,
   foragingMatrix,
   movementMatrix,
-  barrier,
+  barrier_sf,
+  perms,
   checktime = FALSE
 )
 }
@@ -123,7 +124,9 @@ landscape. Higher values are the best foraging areas.}
 \item{movementMatrix}{A RASTER describing the movement ease of the landscape.
 Higher values are the easiest to move through.}
 
-\item{barrier}{barriers datasets}
+\item{barrier_sf}{barrier simple features list}
+
+\item{perms}{list of permeabilities}
 
 \item{checktime}{boolean if you want to more accurately estimate time req'd}
 }

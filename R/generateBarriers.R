@@ -12,7 +12,7 @@
 #' @export
 #'
 
-generateBarriers <- function(barriers, rast, p_list) {
+generateBarriers <- function(barriers, rast, p_list, ...) {
   # inputs are a shapefile of barrier data and a list of accompanying
   # permeabilities for each one. If all are the same for one barrier type,
   # then we only have to run it once for the whole dataset
@@ -23,7 +23,6 @@ generateBarriers <- function(barriers, rast, p_list) {
     message("WARNING! length of permeability vector must be 1 or #barriers")
     return()
   } else {
-    message("Changing permeability based on barrier.")
     if (LP == 1) {
       message("NOTE: setting all barrier permeabilities to ", p_list, '.')
       p <- p_list
@@ -31,9 +30,9 @@ generateBarriers <- function(barriers, rast, p_list) {
     for (i in 1:NB) {
       if (LP > 1) p = p_list[i]
       b <- barriers[[i]]
-      segs <- .segmentBarriers(b, i)
-      mat <- .createMatrix(data, p)
-      lookup <- .createLookup(segs, rast)
+      segs <- .segmentBarriers(b, i, ...)
+      mat  <- .createMatrix(segs, p)
+      lookup<-.createLookup(segs, rast)
 
       if (i == 1) {
         barrier.df <- mat
@@ -44,12 +43,21 @@ generateBarriers <- function(barriers, rast, p_list) {
       }
     }
   }
+  message(dim(barrier.df))
+  message('barriers')
+  print(head(barrier.df))
+  message('lookup')
+  print(head(lookup))
+  # only keep barriers that are within the environmental raster.
+  message('Removing barriers outside environment...')
+  inx.keep <- which(barrier.df[,6] %in% lookup[,3])
+  barrier.df <- barrier.df[inx.keep,]
   return(list(barrier.df, lookup.df))
 }
 
 # helper functions not to export
-.segmentBarriers <- function(b, id=0) {
-  data <- b %>% st_segments()
+.segmentBarriers <- function(b, id=0, ...) {
+  data <- b %>% st_segments(...)
   NR = nrow(data)
   dig <- floor(log10(NR)) + 1
   data$INX <- id + (10 ^ -dig) * (1:NR)

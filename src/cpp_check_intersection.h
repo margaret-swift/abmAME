@@ -1,8 +1,7 @@
 
 double cpp_check_intersection(std::vector<double> origin,
                               std::vector<double> target,
-                              std::vector<double> fence_x1,
-                              std::vector<double> fence_x2,
-                              std::vector<double> fence_y1,
-                              std::vector<double> fence_y2,
-                              std::vector<double> p_cross);
+                              int inx,
+                              Rcpp::NumericMatrix BARRIERS,
+                              Rcpp::NumericMatrix LOOKUP,
+                              Rcpp::NumericMatrix INXMAT);

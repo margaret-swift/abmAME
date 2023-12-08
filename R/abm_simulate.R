@@ -136,7 +136,8 @@ abm_simulate <- function(start, timesteps,
                          foragingMatrix,
                          movementMatrix,
 
-                         barrier,
+                         barrier_sf,
+                         perms,
                          checktime=FALSE){
 
 
@@ -317,16 +318,14 @@ abm_simulate <- function(start, timesteps,
     minCheck <- min(mat, na.rm=TRUE) >= -99.9
     maxCheck <- max(mat, na.rm=TRUE) <= 1
     flag = all(minCheck, maxCheck)
-    print(paste0('min max within range: ', flag))
     flag
   }
 
-  print('creating raster matrices for landscape variables...')
+  message('creating raster matrices for landscape variables...')
   moveMat  <- createMat(movementMatrix)
   sheltMat <- createMat(shelteringMatrix)
   forageMat<- createMat(foragingMatrix)
 
-  print('checking if raster matrices have correct numeric values...')
   if(
      !checkMat(sheltMat) |
      !checkMat(moveMat) |
@@ -342,25 +341,18 @@ abm_simulate <- function(start, timesteps,
   envExt <-c(ext, res)
 
 
-
   ### BARRIERS ###
 
   # create a raster matrix for cell lookup -- which cells are crossed by which
-  rast = sheltMat
-  values(rast)[,] <- 1:ncell(rast)
+  inxRast = shelteringMatrix
+  values(inxRast)[,] <- 1:ncell(inxRast)
+  inxMat <- createMat(inxRast)
 
   # Generate the barrier dataset by segmenting sf lines
-  print('generating barriers...')
-  barrier_data = generateBarriers(barrier_sf, rast, perms)
+  message('generating barriers...')
+  barrier_data = generateBarriers(barrier_sf, inxRast, perms, progress=FALSE)
   barrier <- barrier_data[[1]]
   lookup <- barrier_data[[2]]
-
-  # get pieces of barrier to pass into C++ function
-  barrier_x1 <- barrier[,'x']
-  barrier_y1 <- barrier[,'y']
-  barrier_x2 <- barrier[,'xend']
-  barrier_y2 <- barrier[,'yend']
-  p_cross    <- barrier[,'perm']
 
   ### CYCLE ###
   # how many additional cycles have been provided, and get that value ready for
@@ -372,7 +364,7 @@ abm_simulate <- function(start, timesteps,
   }
 
   # if (checktime) {
-  #   print('checking time to run full simulation...')
+  #   message('checking time to run full simulation...')
   #   t0 <- proc.time()[['elapsed']]
   #   nstep = 100
   #   testres <- run_abm_simulate(
@@ -432,14 +424,16 @@ abm_simulate <- function(start, timesteps,
   # } else { persec = 0.0034 }
   # est.time <- timesteps * persec
   #
-  # print('running simulation...')
-  # print(paste0('start time: ', Sys.time()))
-  # print(paste0('estimated time to run ', timesteps, ' iterations: ', est.time, " seconds"))
-  # print(paste0('estimated end time: ', Sys.time()+est.time))
+  # message('running simulation...')
+  # message(paste0('start time: ', Sys.time()))
+  # message(paste0('estimated time to run ', timesteps, ' iterations: ', est.time, " seconds"))
+  # message(paste0('estimated end time: ', Sys.time()+est.time))
 
   # input all into the Cpp function
   # tictoc::tic()
-  Sys.sleep(2)
+  # Sys.sleep(2)
+  # message("OKAY STARTING NOW")
+  # Sys.sleep(2)
   res <- run_abm_simulate(
     startx = startxIN,
     starty = startyIN,
@@ -484,19 +478,16 @@ abm_simulate <- function(start, timesteps,
     shelterMatrix = sheltMat,
     forageMatrix = forageMat,
     moveMatrix = moveMat,
+    inxMat = inxMat,
     envExt = envExt,
 
-    barrier_x1,
-    barrier_x2,
-    barrier_y1,
-    barrier_y2,
-    p_cross,
+    barrier,
     lookup
   )
   # tictoc::toc()
   # tidy up all objects parse via the
   # list into dataframes with properly labelled columns
-
+  message("HOORAY WE ARE DONE!")
   OUTPUTS <- vector(mode = "list", length = 4)
   names(OUTPUTS)[1] <- "locations"
   names(OUTPUTS)[2] <- "options"
@@ -589,13 +580,11 @@ run_abm_simulate <- function(startx, starty,
                              shelterMatrix,
                              forageMatrix,
                              moveMatrix,
+                             inxMat,
+
                              envExt,
 
-                             barrier_x1,
-                             barrier_x2,
-                             barrier_y1,
-                             barrier_y2,
-                             p_cross,
+                             barrier,
                              lookup
 ){
   .Call("_abmFences_cpp_abm_simulate",
@@ -638,14 +627,11 @@ run_abm_simulate <- function(startx, starty,
         shelterMatrix,
         forageMatrix,
         moveMatrix,
+        inxMat,
+
         envExt,
 
-
-        barrier_x1,
-        barrier_x2,
-        barrier_y1,
-        barrier_y2,
-        p_cross,
+        barrier,
         lookup
         )
 }

@@ -8,15 +8,11 @@
 
 \item{target}{target location}
 
-\item{barrier_x1}{barrier segment x start values}
+\item{BARRIERS}{barrier segment endpoint data}
 
-\item{barrier_x2}{barrier segment x end values}
+\item{ENVEXT}{environmental extent for raster data}
 
-\item{barrier_y1}{barrier segment y start values}
-
-\item{barrier_y2}{barrier segment y end values}
-
-\item{p_cross}{barrier segment permeability values}
+\item{LOOKUP}{lookup table for barrier crossings}
 }
 \value{
 A Boolean of whether any barrier is crossed

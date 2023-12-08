@@ -4,7 +4,7 @@
 \alias{generateBarriers}
 \title{Generate barriers from sf file and permeability given by user}
 \usage{
-generateBarriers(barriers, p_list)
+generateBarriers(barriers, rast, p_list, ...)
 }
 \arguments{
 \item{barriers}{Barriers provided by user in sf format.}

@@ -35,8 +35,7 @@ std::vector<double> cpp_get_values_rast( Rcpp::NumericMatrix RASTER,
      // transform x,y location to row,col in raster matrix
      int xinx = floor((XLOCS[loc] - xmin) / xres);
      int yinx = floor((YLOCS[loc] - ymin) / yres);
-     // std::cout << "x value: " << XLOCS[loc] << " -> inx: " << xinx << std::endl;
-     // std::cout << "y value: " << YLOCS[loc] << " -> inx: " << yinx << std::endl;
+     // std::cout << "  raster location: " << xinx << ", " << yinx << std::endl;
 
      // CHECK if animal leaves environmental data area
      if( ( xinx > ncols ) |
@@ -55,8 +54,11 @@ std::vector<double> cpp_get_values_rast( Rcpp::NumericMatrix RASTER,
 
      // OTHERWISE
      } else {
+       // Sleep(100);
+       // std::cout << "  raster value: " << RASTER(xinx, yinx) << std::endl;
        OUTPUT_VALUES[loc] = RASTER(xinx, yinx);
      }
    }
+   // Sleep(1000);
    return(OUTPUT_VALUES);
  }
