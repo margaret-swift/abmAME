@@ -24,7 +24,7 @@ To install *this package*:
 
 ```
 install.packages("devtools")
-devtools::install_github("margaret-swift/abmFences")
+devtools::install_github("margaret-swift/abmAME")
 ```
 
 
