@@ -27,7 +27,7 @@ generateLandscapeData <- function(rasters, barriers, perms=1, crs=32735){
 
   message("== RASTERS ==")
   message("reprojecting rasters if necessary...")
-  rast.reproj = lapply(rasts, .projectMe)
+  rast.reproj = lapply(rasters, .projectMe)
 
   message("acquiring extent and resolution of rasters...")
   rast <- rast.reproj[[1]]

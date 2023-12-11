@@ -557,24 +557,21 @@
 
        // step 3: if there is an intersection, discard with probability 1-P
        if (isblocked) {
-         if (dolog) {
-           std::cout << "[" << std::string(nstep, '.') << "]" << std::endl;
-           std::cout << " " << std::string(stepcount, '|');
-         }
 
-         // If there have been too many trials, keep the most recent draw
+         // IF there have been too many trials, keep the most recent draw
          //   and alert the user.
          if (trial_count >= trial_kill) {
            std::cout << "WARNING ele cannot find target that doesn't cross " <<
              "the barrier! Aborting selection at DRAW " << i << ", option " <<
                j << ".\n";
-         // otherwise, the intersection blocks the individual; redraw but
+
+         // ELSE, the intersection blocks the individual; redraw but
          // increase the trial counter
          } else {
            trial_count++;
-           continue; // THROW AWAY current draw
+           continue;
          }
-       }
+       } // end isblocked if
 
        // add in which step the options are for
        step_Options[j] = i;

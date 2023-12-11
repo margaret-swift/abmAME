@@ -281,11 +281,13 @@ abm_simulate <- function(start, timesteps,
   ### CYCLE ###
   # how many additional cycles have been provided, and get that value ready for
   # C++
-  if(is.null(additional_Cycles)){
-    nAdditionalCycles <- 0
-  } else {
-    nAdditionalCycles <- nrow(additional_Cycles)
-  }
+  if(is.null(additional_Cycles)) nAdditionalCycles <- 0
+  else nAdditionalCycles <- nrow(additional_Cycles)
+
+  ##############################################################################
+  ### RUN SIMULATION
+  ##############################################################################
+  tictoc::tic()
   res <- run_abm_simulate(
     startx = startxIN,
     starty = startyIN,
@@ -333,10 +335,9 @@ abm_simulate <- function(start, timesteps,
     envExt = envExt,
     barrier = barriers
   )
-  # tictoc::toc()
+  tictoc::toc()
   # tidy up all objects parse via the
   # list into dataframes with properly labelled columns
-  message("HOORAY WE ARE DONE!")
   OUTPUTS <- vector(mode = "list", length = 4)
   names(OUTPUTS)[1] <- "locations"
   names(OUTPUTS)[2] <- "options"
