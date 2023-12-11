@@ -486,7 +486,6 @@
      int j = 0;
      int trial_count = 0;
      int trial_kill = nopt * 10000;
-     int crosscount = 0;
 
      while (j < nopt) {
 
@@ -558,8 +557,6 @@
 
        // step 3: if there is an intersection, discard with probability 1-P
        if (isblocked) {
-         std::cout << "  ELE CROSSES FENCE!!!" << std::endl;
-         crosscount++;
          if (dolog) {
            std::cout << "[" << std::string(nstep, '.') << "]" << std::endl;
            std::cout << " " << std::string(stepcount, '|');
