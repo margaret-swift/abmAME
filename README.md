@@ -5,9 +5,10 @@
 --------------------------------------------------------------------------------
 
 abmAME, or "abmAnimalMovementExtension" extends the *[abmAnimalMovement](https://github.com/BenMMarshall/abmAnimalMovement)* package functionality to include:
-- Introduction of linear barriers (e.g. fences, roads, rivers) with a perceived permeability ("crossability") for the species/sex/individual being modeled.
+- Introduction of linear barriers (e.g. fences, roads, rivers) with a perceived permeability for the species/sex/individual being modeled.
 - Extension of matrix-based landscapes to include real-world georeferenced rasters in simulated agent step choices.
-- A hierarchical extension of shelter use to define both local and global movement restricitons.
+- [TODO] Hierarchical expansion of shelter use to define both local and global movement restrictions.
+- [TODO] Seasonal-based selection of landscape rasters and shelter attraction strength in agent movement choices.
 
 --------------------------------------------------------------------------------
 
