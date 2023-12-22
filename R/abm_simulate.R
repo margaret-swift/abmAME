@@ -128,7 +128,9 @@ abm_simulate <- function(start, timesteps,
                          rest_Cycle,
                          additional_Cycles,
 
-                         landscape_data){
+                         landscape_data,
+                         home_range_area=NULL,
+                         home_range_units=NULL){
 
 
 # Verify/check inputs -----------------------------------------------------
@@ -236,6 +238,15 @@ abm_simulate <- function(start, timesteps,
        ){
       stop("The additional cycles data.frame (cycleMat), if needed, requires four numeric columns")
     }}
+  ## home range
+  if(!is.null(home_range_area)){
+    isAreaUnit <- function(u) ifelse(u == 'ha', TRUE, grepl('2', u))
+    if (class(home_range_area) != "units") {
+      if (is.null(home_range_units)) { stop("units for home range size not provided")
+      } else if (!isAreaUnit(home_range_units)) { stop('units for home range size must be area appropriate')
+      } else { units(home_range_area) <- home_range_units }
+    }
+  }
   # if(
   #   !all(all(terra::ext(shelteringMatrix) == terra::ext(movementMatrix)),
   #       all(terra::ext(foragingMatrix) == terra::ext(shelteringMatrix)),
@@ -255,28 +266,51 @@ abm_simulate <- function(start, timesteps,
 
 
 # Rearrange inputs for C++ ------------------------------------------------
+  # for debugging
+  # shelterLocations <- data.frame(
+  #   "x" = c(-134700, -134000, -133000),
+  #   "y" = c(7963800, 7963600, 7963400))
+  # start <- c(-134900, 7964000)
 
-  # split the vector of start location x and y
+  # split the vector of start location, shelters, and avoidance points
   startxIN <- start[1]
   startyIN <- start[2]
-
-  # split the data.frame of shelter locations
   shelter_locs_xIN <- shelterLocations[,1]
   shelter_locs_yIN <- shelterLocations[,2]
-
-  # split the data.frame of avoidance points
   avoidPoints_xIN <- avoidPoints[,1]
   avoidPoints_yIN <- avoidPoints[,2]
 
+  # transform home range area to a radius
+  if (is.null(home_range_area)) { home_r = Inf
+  } else {
+    units(home_range_area) <- 'm2' # transform units to meters2
+    home_r = sqrt(as.numeric(home_range_area) / pi)
+  }
+  home_x = startxIN
+  home_y = startyIN
+
+  # choose home range center point
+  # euc.dist <- function(p1, p2) { sqrt( ((p2[1]-p1[1])^2) + ((p2[2]-p1[2])^2) ) }
+  # distFromStart <- function(x) { euc.dist(start, x)}
+  # dists <- apply(shelterLocations, 1, distFromStart)
+
+  # if (min(dists) > home_r) {
+  #   warning('No shelters within home range. Choosing start point as HR center. ',
+  #           'Recommend a larger home range or more shelter points.')
+    # home_x = startxIN
+    # home_y = startyIN
+  # } else {
+  #   home_x = shelter_locs_xIN[which.min(dists)]
+  #   home_y = shelter_locs_yIN[which.min(dists)]
+  # }
 
   # LANDSCAPE DATA
-  matrices <- landscape_data[[1]]
-  envExt <- landscape_data[[2]]
-  barriers <- landscape_data[[3]]
-
+  matrices<- landscape_data[[1]]
+  envExt  <- landscape_data[[2]]
+  barriers<- landscape_data[[3]]
   sheltMat = matrices[[1]]
-  forageMat = matrices[[2]]
-  moveMat = matrices[[3]]
+  forageMat= matrices[[2]]
+  moveMat  = matrices[[3]]
 
   ### CYCLE ###
   # how many additional cycles have been provided, and get that value ready for
@@ -298,6 +332,9 @@ abm_simulate <- function(start, timesteps,
     shelter_locs_x = shelter_locs_xIN,
     shelter_locs_y = shelter_locs_yIN,
     sSiteSize = shelterSize,
+    home_center_x = home_x,
+    home_center_y = home_y,
+    home_radius = home_r,
     avoidPoints_x = avoidPoints_xIN,
     avoidPoints_y = avoidPoints_yIN,
 
@@ -399,6 +436,9 @@ run_abm_simulate <- function(startx, starty,
                              shelter_locs_x,
                              shelter_locs_y,
                              sSiteSize,
+                             home_center_x,
+                             home_center_y,
+                             home_radius,
                              avoidPoints_x,
                              avoidPoints_y,
 
@@ -442,6 +482,9 @@ run_abm_simulate <- function(startx, starty,
         shelter_locs_x,
         shelter_locs_y,
         sSiteSize,
+        home_center_x,
+        home_center_y,
+        home_radius,
         avoidPoints_x,
         avoidPoints_y,
 

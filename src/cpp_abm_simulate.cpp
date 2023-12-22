@@ -19,6 +19,9 @@
  //' @param nopt The number of options to be considered at each timestep
  //' @param shelter_locs_x A vector of shelter locations x coordinates.
  //' @param shelter_locs_y A vector of shelter locations y coordinates.
+ //' @param home_center_x A single location center x of home range
+ //' @param home_center_y A single location center y of home range
+ //' @param home_radius A single value giving radius of home range
  //' @param sSiteSize A double dictating at what range the animal's movements
  //'   will dramatically drop simulating (near-)stationary behaviour.
  //' @param avoidPoints_x A vector of avoidance point x coordinates.
@@ -98,6 +101,9 @@
      std::vector<double> shelter_locs_x,
      std::vector<double> shelter_locs_y,
      double sSiteSize,
+     double home_center_x,
+     double home_center_y,
+     double home_radius,
      std::vector<double> avoidPoints_x,
      std::vector<double> avoidPoints_y,
 
@@ -137,6 +143,8 @@
      std::vector<double> envExt,
      Rcpp::NumericMatrix barriers
  ){
+
+   // VARIABLE INITIALIZATION BLOCK {
 
    // DISTRIBUTION DRAW OBJECTS -------------------------------------------------
    // location for the step and angle for each choice or destination
@@ -207,11 +215,11 @@
    // desMatrix will update depending on behaviour
    Rcpp::NumericMatrix desMatrix;
 
-
    // define the memory for the shelter site selection
    // requires predefined vector of shelter coords
    int shel_ndes = shelter_locs_x.size();
    std::vector<double> des_Options(shel_ndes);
+
    // set up the space for foraging destinations that can be dynamically selected
    // IE do not have to be predefined like the shelter ones
    std::vector<double> x_forageOptions(ndes);
@@ -228,9 +236,11 @@
    // DISTANCE CALCULATION OBJECTS ----------------------------------------------
    // objects for guiding animal towards destination
    double currDist;
+   double currHomeDist;
    // a vector to hold the distance between options and the destination
    double c_dist2;
    double c_dist;
+   double c_home_dist2;
    std::vector<double> distance_toDes(nopt);
    // double distInvert;
    std::vector<double> weights_toDes(nopt);
@@ -249,7 +259,7 @@
    // INITIAL LOCATION SETTING --------------------------------------------------
    x_Locations[0] = startx;
    y_Locations[0] = starty;
-   // intial destination
+   // initial destination
    des_x_Locations[0] = des_x;
    des_y_Locations[0] = des_y;
    //----------------------------------------------------------------------------
@@ -264,32 +274,27 @@
    }
 
 
-   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   // LOOP OVER EACH TIMESTEP
-   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-   // LOGGING!
+   // LOGGING SETUP -------------------------------------------------------------
+   bool dolog = timesteps > 1000;
    int nstep = 50;
    int stepcount = 0;
    int slice = std::floor(timesteps / nstep);
-   bool dolog = timesteps > 1000;
-   if (dolog) {
-     std::cout << "[" << std::string(nstep, '.') << "]" << std::endl;
-     std::cout << " ";
-   }
+   if (dolog) {std::cout<<"["<< std::string(nstep,'.')<<"]"<<std::endl<<" ";}
+   //----------------------------------------------------------------------------
+   //}
 
+   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   // LOOP OVER EACH TIMESTEP
+   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    for(int i = 1, a = nopt, desi = 0; i < timesteps; i++){
-     // std::cout << "LOOP " << i << std::endl;
-
-     // progress marker
-     if ( (dolog) && (i > 0) && (i % slice == 0)) {
-       std::cout << '|';
-       stepcount++;
-     }
 
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // CYCLES
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     // {
+     // MAGGIE NOTE: HERE is probably where we will put the seasonal transition
+     // values, by having SEASON as a new cycle.
+     // TODO: figure out how cycles work, exactly...
 
      /* working under the assumption that i == minute, but the cycle is defined in
       hours AKA 12 hour cycle offset to be crepusclar, we need to convert i AKA minute to hours */
@@ -300,11 +305,8 @@
        rest_Cycle_PHI / rest_Cycle_TAU, // make sure PHI is kept ~ to TAU so no drift
        rest_Cycle_TAU);
 
-
      if(addCycles > 0){
-
        for(int cyc = 0; cyc < addCycles; cyc++){
-
          b0_addMod = cpp_cycle_draw(
            i*1.0 / 60, // make i a double and convert it to hours.
            // i == 1 min so 1/60 i == hour
@@ -316,19 +318,16 @@
          // we then update the resting chance modifier with the second cycle output
          b0_dailyMod = b0_dailyMod + b0_addMod;
        }
-
-
      } // end of if
-
-
-
+     // } end SEC:CYCLES
 
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // CHOOSE BEHAVIORAL STATE AND TRANSITION PROB
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+     // {
      /* switch to use a given set of transition probabilities that change
       depending on the previous behavioural state*/
+
      switch(behave_Locations[i-1]){
      case 0:
        // this will update the behaviour shift prob depending on the time of day
@@ -345,13 +344,12 @@
        behave_Locations[i] = cpp_sample_options(b2_Options_Current);
        break;
      } // end of switch
-
-
+     // } end SEC:TRANSITIONS
 
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // STEP, ANGLE, AND RASTER MATRIX BASED ON BEHAVIOR
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+     // {
      /* assigning the step and angle parameters
       depending on the behaviour */
      switch(behave_Locations[i]){
@@ -380,12 +378,12 @@
        behave_cur = "moving";
        break;
      }
-
+     // } end SEC:STEP-ANGLE-RASTER CHOICE
 
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // CHOOSING APPROPRIATE DESTINATION
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+     // {
      // choosing between a number of possible predefined destinations
      // new destination should be chosen if behaviour changes or after a
      // period of time passes e.g. a day.
@@ -395,11 +393,8 @@
        // desMatrix updated at each behaviour switch above
        // switch to update possible destination / point of attraction
        switch(behave_Locations[i]){
-       case 0:
+       case 0: // SHELTER
 
-         // MAGGIE: RASTER CHECK #1
-         // std::cout << "resting raster check" << std::endl;
-         // Sleep(2);
          des_Options = cpp_get_values_rast(desMatrix, envExt, shelter_locs_x, shelter_locs_y);
          chosenDes = cpp_sample_options(des_Options);
 
@@ -416,7 +411,7 @@
 
          break;
        // MAGGIE note: swapped cases 1 and 2 for forage/explore
-       case 1:
+       case 1: // FORAGE
 
          for(int dopt = 0; dopt < ndes; dopt++, desi++){
 
@@ -434,9 +429,6 @@
            step_DesOptionsAll[desi] = i;
          }
 
-         // MAGGIE: RASTER CHECK #2
-         // std::cout << "forage raster check" << std::endl;
-         // Sleep(2);
          des_forageOptions = cpp_get_values_rast(desMatrix, envExt, x_forageOptions, y_forageOptions);
 
          chosenDes = cpp_sample_options(des_forageOptions);
@@ -445,44 +437,41 @@
 
          break;
 
-       case 2:
-         // we can update the destination here, but explore doesn't have a
-         // destination weighting so this has no effect
-         des_x = shelter_locs_x[0];
-         des_y = shelter_locs_y[0];
+       case 2: //EXPLORE
+         // MAGGIE NOTE: Update exploration destination to the home range center;
+         // this way the animal doesn't explore beyond its means.
+         // TODO: create a switch to decide if the animal has a home range or not
+         // in main R code; actually sets the distance to Inf to make the code simpler?
+         des_x = home_center_x;
+         des_y = home_center_y;
          break;
-       }
-     }
+       } // end switch
+     } // end if
 
      // store the destination for output
      des_x_Locations[i] = des_x;
      des_y_Locations[i] = des_y;
      des_chosen[i] = chosenDes;
 
-
      // current distance from destination, needed to see if movement should
      // reduce because of proximity
      c_dist2 = std::pow((des_x - x_Locations[i-1]), 2) +
        std::pow((des_y - y_Locations[i-1]), 2);
      currDist = std::sqrt(c_dist2);
+     c_home_dist2 = std::pow((home_center_x - x_Locations[i-1]), 2) +
+       std::pow((home_center_y - y_Locations[i-1]), 2);
+     currHomeDist = std::sqrt(c_home_dist2);
+     // } end SEC:DESTINATIONS
 
-
-
-     //     ***************************************************************
-     //   *******************************************************************
-     // ***********************************************************************
-     //                           STEP OPTIONS DRAW !
-     // ***********************************************************************
-     //   *******************************************************************
-     //     ***************************************************************
+     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     // STEP OPTIONS DRAW
+     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     // {
 
      // MAGGIE BOOKMARK : Changed original FOR loop to a WHILE loop so that if
      //   a location is chosen that puts the animal within or on the other side
      //   of a barrier, that option is skipped (with a certain barrier-permeability
      //   probability P) and another is chosen.
-     // Step 0: Restrict barrier list to those within Xkm of origin point, to save time(?)
-     // TODO ^^ BOOKMARK ^^
-
      int j = 0;
      int trial_count = 0;
      int trial_kill = nopt * 10000;
@@ -513,16 +502,19 @@
        // DRAW STEP LENGTH AND TURNING ANGLE
        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-       // an if to make sure the animal doesn't move too far from a shelter site
-       // need the initial high timesteps to get there.
-       // this could be swapped to maximise the step length if it is far from shelter/centre
-       if( (behave_Locations[i] == 0) & (currDist < (sSiteSize/rescale)) ){
-         step = Rcpp::rgamma(1, behave_k_step, behave_s_step)[0];
-         step = step / rescale / 100;
-       } else{
-         step = Rcpp::rgamma(1, behave_k_step, behave_s_step)[0];
-         step = step / rescale;
-       }
+
+       // step is initially drawn from a gamma dist and rescaled
+       step = Rcpp::rgamma(1, behave_k_step, behave_s_step)[0] / rescale;
+
+       // if animal is
+       //   (a) sheltering and too far from shelter, or
+       //   (b) exploring and too far from the home range center,
+       // then make the step size large
+       if (
+           (behave_Locations[i] == 0 && currDist > (sSiteSize/rescale) ) |
+           (behave_Locations[i] == 2 && currHomeDist > home_radius )
+         ) { step = step * 100; }
+
 
        // draw from vonmises for angle
        vmdraw = cpp_vonmises(1, behave_mu_angle, behave_k_angle)[0];
@@ -587,13 +579,14 @@
        j++;
        a++;
      } // END MOVEMENT LOOP
+     // } end SEC:OPTIONS
 
+     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // WEIGHTING OPTIONS BY DISTANCE FROM DESTINATION
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     // {
 
      // MAGGIE: RASTER CHECK #3
-     // std::cout << "fence crossings: " << crosscount << std::endl;
-     // std::cout << "checking move raster values at options" << std::endl;
      move_Options = cpp_get_values_rast(moveMatrix, envExt, x_Options, y_Options);
 
      /* here we need to adjust the movement objects so the animal prefers to head
@@ -618,7 +611,7 @@
      // using the find max and min found above we normalise all the distances
      // from possible choices in relation to the final destination
      for(int m = 0; m < nopt; m++){
-       // first we have to invert it so ones closer to the destination are
+       // first we have to invert it so steps closer to the destination are
        // preferred. ie larger numbers and greater weighting in the sample
        // function
        weights_toDes[m] = 1 - ((distance_toDes[m] - dist_min) /
@@ -626,10 +619,13 @@
        // then combine them with the movement Matrix values
        // we can deal with some balancing issues here
 
-       // only apply distance/point attraction to non-exploratory behaviours
-       if(behave_Locations[i] == 1){
+       // IF behavior is exploratory AND distance from home range center is less
+       // than user-supplied home range radius, do not weight move options.
+       if(behave_Locations[i] == 2 && distance_toDes[m] < home_radius){
          move_Options[m] = move_Options[m];
 
+       // IF behavior is sheltering/foraging, or if the animal is exploring and
+       // has wandered too far from their home range center, apply distance/point attraction
        } else {
          // and use the different ways of balancing the influence of the destination
          switch(destinationTrans){
@@ -645,12 +641,12 @@
          } // switch end
        } // if end
      }// for m end
-
-
+     //} end SEC:WEIGHTING
 
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // DEALING WITH AVOIDANCE POINTS
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     // {
 
      // current distances from all avoidance points
      cumulative_dist = 0;
@@ -694,14 +690,13 @@
          move_Options[m] = move_Options[m] + avoidMod * std::pow(weights_toDes[m], 2);
          break;
        } // switch end
-     }
-
-
+     } // end FOR
+     // } end SEC:AVOIDPOINTS
 
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // NOW THE AGENT MAKES ITS CHOICE
      // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+     // {
      chosen = cpp_sample_options(move_Options);
      chosen_Options[i] = chosen;
 
@@ -719,9 +714,21 @@
      ta_Locations[i] = last_angle;
      step_Locations[i] = i;
 
-   }
-   if (dolog) {std::cout << "| 100% HOORAY! \\o/" << std::endl;}
+     // progress marker
+     if ( (dolog) && (i > 0) && (i % slice == 0)) {
+       std::cout << '|';
+       stepcount++;
+     }
+     // } end SEC:CHOICE SELECTION
 
+   } // end FOR
+   if (dolog) {std::cout << "| 100%   HOORAY!   \\o/" << std::endl;}
+
+
+   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   //             OUTPUTS
+   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   // {
    Rcpp::List INPUT_basic = Rcpp::List::create(
      Rcpp::Named("in_startx") = startx,
      Rcpp::Named("in_starty") = starty,
@@ -733,6 +740,9 @@
    Rcpp::List INPUT_destination = Rcpp::List::create(
      Rcpp::Named("in_shelter_locs_x") = shelter_locs_x,
      Rcpp::Named("in_shelter_locs_y") = shelter_locs_y,
+     Rcpp::Named("in_home_x") = home_center_x,
+     Rcpp::Named("in_home_y") = home_center_y,
+     Rcpp::Named("in_home_r") = home_radius,
      Rcpp::Named("in_sSiteSize") = sSiteSize,
      Rcpp::Named("in_avoidPoints_x") = avoidPoints_x,
      Rcpp::Named("in_avoidPoints_y") = avoidPoints_y,
@@ -825,5 +835,5 @@
      // Rcpp::Named("ol_distWeights") = weights_toDes
    );
    return OUTPUT;
-
+   // } end SEC:OUTPUTS
  }

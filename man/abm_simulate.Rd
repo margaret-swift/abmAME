@@ -26,7 +26,9 @@ abm_simulate(
   behave_Tmat,
   rest_Cycle,
   additional_Cycles,
-  landscape_data
+  landscape_data,
+  home_range_area = NULL,
+  home_range_units = NULL
 )
 }
 \arguments{
